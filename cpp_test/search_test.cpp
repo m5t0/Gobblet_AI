@@ -139,21 +139,22 @@ TEST(pair_to_board_test, test1) {
         0b1'0000,0,0,0,
     };
 
-    auto p = board_to_pair(board);
+    int turn = 0;
+    auto p = board_to_pair(board, turn);
     ASSERT_EQ(board, pair_to_board(p));
-    auto p1 = board_to_pair(board1);
+    auto p1 = board_to_pair(board1, turn);
     ASSERT_EQ(board1, pair_to_board(p1));
-    auto p2 = board_to_pair(board2);
+    auto p2 = board_to_pair(board2, turn);
     ASSERT_EQ(board2, pair_to_board(p2));
-    auto p3 = board_to_pair(board3);
+    auto p3 = board_to_pair(board3, turn);
     ASSERT_EQ(board3, pair_to_board(p3));
-    auto p4 = board_to_pair(board4);
+    auto p4 = board_to_pair(board4, turn);
     ASSERT_EQ(board4, pair_to_board(p4));
-    auto p5 = board_to_pair(board5);
+    auto p5 = board_to_pair(board5, turn);
     ASSERT_EQ(board5, pair_to_board(p5));
-    auto p6 = board_to_pair(board6);
+    auto p6 = board_to_pair(board6, turn);
     ASSERT_EQ(board6, pair_to_board(p6));
-    auto p7 = board_to_pair(board7);
+    auto p7 = board_to_pair(board7, turn);
     ASSERT_EQ(board7, pair_to_board(p7));
 }
 

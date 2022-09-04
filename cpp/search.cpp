@@ -128,7 +128,8 @@ std::array<int, PIECE_TYPE_COUNT> count_board_pieces(Board& board, int turn) {
 // 小、中、大、特大のある場所で管理をする
 // それをさらに(小、中)と(大、特大)の組にする
 // boardからpair<int64, int64>に変換
-std::pair<long long, long long> board_to_pair(Board& board) {
+std::pair<long long, long long> board_to_pair(Board& board, int& turn) {
+    assert(turn == 0 || turn == 1);
     // 小、中、大、特大の順番
     // 同じ種類の中では先手、後手の順番にPIECE_EACH_COUNT個ずつ入っている
     std::array<int, PIECE_TYPE_COUNT> p, cnt;
@@ -162,14 +163,14 @@ std::pair<long long, long long> board_to_pair(Board& board) {
         std::fill(cnt.begin(), cnt.end(), 0);
     }
 
-    return { (static_cast<long long>(p[0]) << 32) | p[1],(static_cast<long long>(p[2]) << 32) | p[3] };
+    return { (static_cast<long long>(p[0]) << 32) | p[1],(static_cast<long long>(p[2]) << 32) | (static_cast<long long>(p[3] << 1) | turn) };
 }
 
 // pair<int64, int64>からboardに変換
-Board pair_to_board(std::pair<long long, long long>& p) {
+Board pair_to_board(std::pair<long long, long long> p) {
     std::array<int, PIECE_TYPE_COUNT> a{
         static_cast<int>(p.first >> 32), static_cast<int>(p.first & ((1LL << 32) - 1)),
-        static_cast<int>(p.second >> 32), static_cast<int>(p.second & ((1LL << 32) - 1)),
+        static_cast<int>(p.second >> 32), static_cast<int>((p.second >> 1) & ((1LL << 32) - 1)),
     };
 
     Board board;
@@ -361,12 +362,12 @@ void simple_search2(int max_depth, int& cnt) {
 }
 
 // メモ化有り深さ優先探索
-void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_map<std::pair<long long, long long>, bool, my_hash>& hash) {
-    auto hp = board_to_pair(board);
-    if (hash.find(hp) != hash.end()) return;
-    hash[hp] = true;
+void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_map<std::pair<long long, long long>, bool, my_hash>& mp) {
     cnt += 1;
     if (depth == 0) return;
+    auto hp = board_to_pair(board, turn);
+    if (mp.find(hp) != mp.end()) return;
+    mp[hp] = true;
 
     //debug_board(board,300);
 
@@ -392,7 +393,7 @@ void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_
                 if (id == id2 || np1 >= p1 || np2 >= p1) continue;
 
                 board[id2] ^= convert_to_square(p1, turn);
-                depth_search2(board, turn ^ 1, depth, cnt, hash);
+                depth_search2(board, turn ^ 1, depth, cnt, mp);
                 board[id2] ^= convert_to_square(p1, turn);
             }
             depth += 1;
@@ -414,7 +415,7 @@ void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_
             if (p1 >= piece || p2 >= piece) continue;
 
             board[id] ^= convert_to_square(piece, turn);
-            depth_search2(board, turn ^ 1, depth, cnt, hash);
+            depth_search2(board, turn ^ 1, depth, cnt, mp);
             board[id] ^= convert_to_square(piece, turn);
         }
         depth += 1;
@@ -426,7 +427,7 @@ void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_
 // ただハッシュ計算の分1局面当たりの探索速度は遅くなる
 void simple_search3(int max_depth, int& cnt) {
     Board board;
-    std::unordered_map<std::pair<long long, long long>, bool, my_hash> hash;
+    std::unordered_map<std::pair<long long, long long>, bool, my_hash> mp;
     std::fill(board.begin(), board.end(), 0);
-    depth_search2(board, 0, max_depth, cnt, hash);
+    depth_search2(board, 0, max_depth, cnt, mp);
 }
