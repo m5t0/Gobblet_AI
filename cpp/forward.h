@@ -31,9 +31,13 @@ int bits_msb(int v);
 std::optional<bool> check_status(Board& board);
 std::array<int, PIECE_TYPE_COUNT> count_board_pieces(Board& board, int turn);
 std::pair<long long, long long> board_to_pair(Board& board, int& turn);
-Board pair_to_board(std::pair<long long, long long> p);
+Board pair_to_board(std::pair<long long, long long>& p);
+std::pair<long long, long long> rotate_pair(std::pair<long long, long long>& p);
+std::pair<long long, long long> transpose_pair(std::pair<long long, long long>& p);
+std::pair<long long, long long> transpose_player_pair(std::pair<long long, long long>& p);
 void simple_search1();
 void simple_search2(int max_depth, int& cnt);
 void simple_search3(int max_depth, int& cnt);
+void simple_search4(int max_depth, int& cnt);
 
 #endif // FORWARD_H_
