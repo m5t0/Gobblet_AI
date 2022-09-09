@@ -139,7 +139,7 @@ TEST(rotate180_test, test1) {
 }
 
 TEST(simple_search_test, test1) {
-    constexpr int max_depth = 8;
+    constexpr int max_depth = 7;
     int cnt = 0;
     auto start = std::chrono::system_clock::now();
     simple_search(max_depth, cnt);

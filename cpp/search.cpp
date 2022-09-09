@@ -149,7 +149,7 @@ void debug_board(const Board& board, int t) {
 // メモ化有り深さ優先探索
 // 対称な局面は同一視する
 // 手番の人のボードがfirstに来るようにする。
-void depth_search(Board& board, int depth, int& cnt, std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, bool, my_hash>& mp) {
+void depth_search(Board& board, int depth, int& cnt, std::map<std::pair<std::uint64_t, std::uint64_t>, bool>& mp) {
     cnt += 1;
     if (depth == 0) return;
     {
@@ -227,7 +227,7 @@ void depth_search(Board& board, int depth, int& cnt, std::unordered_map<std::pai
 
 void simple_search(int max_depth, int& cnt) {
     Board board{};
-    std::unordered_map<Board, bool, my_hash> mp;
+    std::map<Board, bool> mp;
     depth_search(board, max_depth, cnt, mp);
 }
 
