@@ -21,20 +21,17 @@ constexpr inline int PIECE_PLAYER_COUNT = PIECE_TYPE_COUNT * PIECE_EACH_COUNT;
 // 16*4=64
 using Board = std::pair<std::uint64_t, std::uint64_t>;
 
-std::uint64_t player_board(Board& board, int turn);
-std::uint64_t top_pieces_board(Board& board, int turn);
-std::optional<bool> check_status(Board& board);
-Board flipHorizontal(Board& x);
-Board flipVertical(Board& x);
-Board flipDiagonalA1H8(Board& x);
-Board flipDiagonalA8H1(Board& x);
-Board rotateClockwise90(Board& x);
-Board rotateCounterclockwise90(Board& x);
-Board rotate180(Board& x);
+std::uint64_t player_board(const Board& board, int turn);
+std::uint64_t top_pieces_board(const Board& board, int turn);
+std::optional<bool> check_status(const Board& board);
+Board flipHorizontal(const Board& x);
+Board flipVertical(const Board& x);
+Board flipDiagonalA1H8(const Board& x);
+Board flipDiagonalA8H1(const Board& x);
+Board rotateClockwise90(const Board& x);
+Board rotateCounterclockwise90(const Board& x);
+Board rotate180(const Board& x);
+void debug_board(Board& board, int t);
 void simple_search(int max_depth, int& cnt);
-
-// æè‚ªŸ‚Á‚½‚çtrue, •‰‚¯‚½‚çfalse
-// Ÿ‚¿•‰‚¯‚ªŒˆ‚Ü‚ç‚È‚¢ê‡nullopt
-std::optional<bool> check_status(Board& board);
 
 #endif // FORWARD_H_
