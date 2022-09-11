@@ -18,9 +18,4 @@ if (MSVC_VERSION GREATER_EQUAL "1900")
     endif()
 endif()
 
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/bind)
-add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11 ${PROJECT_BINARY_DIR}/pybind11)
-pybind11_add_module(search bind.cpp)
-target_link_libraries(search PRIVATE cpp)
-
 # TODO: テストを追加し、必要な場合は、ターゲットをインストールします。

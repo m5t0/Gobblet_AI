@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <cassert>
 #include <queue>
-#include <unordered_map>
+#include <map>
+#include <functional>
+#include <cstdint>
 #include <tuple>
 #include <bitset>
 #include <thread>

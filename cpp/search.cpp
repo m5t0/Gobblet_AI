@@ -3,7 +3,6 @@
 
 #include "forward.h"
 #include "cpp.h"
-#define NDEBUG
 
 // 繰り返し二乗法
 template<class T>
@@ -15,6 +14,19 @@ T my_pow(T x, T n) {
         n >>= 1;
     }
     return res;
+}
+
+// ボードをゆっくり出力する
+// tの単位はms
+void debug_board(const Board& board, int t) {
+    for (int id = 0; id < BOARD_ID_SIZE; id++) {
+        auto [x, y] = board_id(id);
+        std::cout << std::bitset<PIECE_TYPE_COUNT * 2>(board[id]);
+        if (y == BOARD_SIZE - 1) std::cout << std::endl;
+        else std::cout << " ";
+    }
+    std::cout << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(t));
 }
 
 // 2次元から1次元へ
@@ -58,7 +70,7 @@ int bits_msb(int v)
 
 // 先手が勝ったらtrue, 負けたらfalse
 // 勝ち負けが決まらない場合nullopt
-std::optional<bool> check_status(Board& board) {
+std::optional<bool> check_status(const Board& board) {
     assert(std::all_of(board.begin(), board.end(), [](int b) { return (take_pieces(b, 0) & take_pieces(b, 1)) == 0; }));
     // 横
     for (int x = 0; x < BOARD_SIZE; x++) {
@@ -117,11 +129,10 @@ std::optional<bool> check_status(Board& board) {
 // 特大、大、中、小
 // turn=0 => 先手
 // turn=1 => 後手
-std::array<int, PIECE_TYPE_COUNT> count_board_pieces(Board& board, int turn) {
+std::array<int, PIECE_TYPE_COUNT> count_board_pieces(const Board& board, int turn) {
     assert(turn == 0 || turn == 1);
     assert(std::all_of(board.begin(), board.end(), [](int b) { return (take_pieces(b, 0) & take_pieces(b, 1)) == 0; }));
-    std::array<int, PIECE_TYPE_COUNT> count;
-    std::fill(count.begin(), count.end(), 0);
+    std::array<int, PIECE_TYPE_COUNT> count{};
 
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
         auto b = board[id] >> (PIECE_TYPE_COUNT * turn);
@@ -136,432 +147,84 @@ std::array<int, PIECE_TYPE_COUNT> count_board_pieces(Board& board, int turn) {
     return count;
 }
 
-// ゴブレットの駒の種類数や個数が変わると使えないことに注意
-// 小、中、大、特大のある場所で管理をする
-// それをさらに(小、中)と(大、特大)の組にする
-// boardからpair<int64, int64>に変換
-std::pair<long long, long long> board_to_pair(Board& board, int& turn) {
-    assert(turn == 0 || turn == 1);
-    // 小、中、大、特大の順番
-    // 同じ種類の中では先手、後手の順番にPIECE_EACH_COUNT個ずつ入っている
-    std::array<int, PIECE_TYPE_COUNT> p, cnt;
-    std::fill(p.begin(), p.end(), 0);
-    std::fill(cnt.begin(), cnt.end(), 0);
-
-    // 後手を先に処理する
-    for (int turn = 1; turn >= 0; turn--) {
-        // 盤上にある駒に対してidを追加
-        // 大きい駒を先に処理する
-        for (int t = PIECE_TYPE_COUNT - 1; t >= 0; t--) {
-            for (int id = 0; id < BOARD_ID_SIZE; id++) {
-                if (((take_pieces(board[id], turn) >> t) & 1) != 1) continue;
-                p[t] *= (BOARD_ID_SIZE + 1);
-                p[t] += id;
-                cnt[t] += 1;
-            }
-        }
-
-        assert(std::all_of(cnt.begin(), cnt.end(), [](int x) {return x <= PIECE_EACH_COUNT; }));
-
-        // 持ち駒のidを追加
-        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-            while (cnt[t] < PIECE_EACH_COUNT) {
-                p[t] *= (BOARD_ID_SIZE + 1);
-                p[t] += BOARD_ID_SIZE;
-                cnt[t] += 1;
-            }
-        }
-
-        std::fill(cnt.begin(), cnt.end(), 0);
-    }
-
-    return { (static_cast<long long>(p[0]) << 32) | p[1],(static_cast<long long>(p[2]) << 32) | (static_cast<long long>(p[3] << 1) | turn) };
-}
-
-// pair<int64, int64>からboardに変換
-Board pair_to_board(std::pair<long long, long long>& p) {
-    std::array<int, PIECE_TYPE_COUNT> a{
-        static_cast<int>(p.first >> 32), static_cast<int>(p.first & ((1LL << 32) - 1)),
-        static_cast<int>(p.second >> 32), static_cast<int>((p.second >> 1) & ((1LL << 31) - 1)),
-    };
-
-    Board board;
-    std::fill(board.begin(), board.end(), 0);
-
-    for (int turn = 0; turn < 2; turn++) {
-        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-            for (int c = 0; c < PIECE_EACH_COUNT; c++) {
-                auto id = a[t] % (BOARD_ID_SIZE + 1);
-                assert(id >= 0 && id <= BOARD_ID_SIZE);
-                if (id != BOARD_ID_SIZE) board[id] |= convert_to_square(1 << t, turn);
-                a[t] /= (BOARD_ID_SIZE + 1);
-            }
-        }
-    }
-
-    return board;
-}
-
-// 反時計回りに回転させたboardのpairの値
-std::pair<long long, long long> rotate_pair(std::pair<long long, long long>& p) {
-    int turn = p.second & 1;
-    std::array<int, PIECE_TYPE_COUNT> a{
-        static_cast<int>(p.first >> 32), static_cast<int>(p.first & ((1LL << 32) - 1)),
-        static_cast<int>(p.second >> 32), static_cast<int>((p.second >> 1) & ((1LL << 31) - 1)),
-    };
-
-    std::array<std::array<int, PIECE_EACH_COUNT * 2>, PIECE_TYPE_COUNT> val;
+// 時計回りに回転させたboard
+Board rotate_board(const Board& board) {
+    Board b{};
     // 各駒ごとに座標変換
-    for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        auto res = a[t];
-        for (int i = 0; i < PIECE_EACH_COUNT * 2; i++) {
-            if (res % (BOARD_ID_SIZE + 1) == BOARD_ID_SIZE) {
-                val[t][i] = BOARD_ID_SIZE;
-            }
-            else {
-                auto [x, y] = board_id(res % (BOARD_ID_SIZE + 1));
-                val[t][i] = board_id(y, BOARD_SIZE - x - 1);
-            }
-            res /= (BOARD_ID_SIZE + 1);
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            b[board_id(y, BOARD_SIZE - 1 - x)] = board[board_id(x, y)];
         }
     }
-
-    // 集計
-    for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        int res = 0;
-        for (int i = PIECE_EACH_COUNT * 2 - 1; i >= 0; i--) {
-            res *= (BOARD_ID_SIZE + 1);
-            res += val[t][i];
-        }
-        a[t] = res;
-    }
-
-    return { (static_cast<long long>(a[0]) << 32) | a[1],(static_cast<long long>(a[2]) << 32) | (static_cast<long long>(a[3] << 1) | turn) };
+    return b;
 }
 
-// 転置させたboardのpairの値
-std::pair<long long, long long> transpose_pair(std::pair<long long, long long>& p) {
-    int turn = p.second & 1;
-    std::array<int, PIECE_TYPE_COUNT> a{
-        static_cast<int>(p.first >> 32), static_cast<int>(p.first & ((1LL << 32) - 1)),
-        static_cast<int>(p.second >> 32), static_cast<int>((p.second >> 1) & ((1LL << 31) - 1)),
-    };
-
-    std::array<std::array<int, PIECE_EACH_COUNT * 2>, PIECE_TYPE_COUNT> val;
+// 転置させたboard
+Board transpose_board(const Board& board) {
+    Board b{};
     // 各駒ごとに座標変換
-    for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        auto res = a[t];
-        for (int i = 0; i < PIECE_EACH_COUNT * 2; i++) {
-            if (res % (BOARD_ID_SIZE + 1) == BOARD_ID_SIZE) {
-                val[t][i] = BOARD_ID_SIZE;
-            }
-            else {
-                auto [x, y] = board_id(res % (BOARD_ID_SIZE + 1));
-                val[t][i] = board_id(y, x);
-            }
-            res /= (BOARD_ID_SIZE + 1);
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            b[board_id(y, x)] = board[board_id(x, y)];
         }
     }
-
-    // 集計
-    for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        int res = 0;
-        for (int i = PIECE_EACH_COUNT * 2 - 1; i >= 0; i--) {
-            res *= (BOARD_ID_SIZE + 1);
-            res += val[t][i];
-        }
-        a[t] = res;
-    }
-
-    return { (static_cast<long long>(a[0]) << 32) | a[1],(static_cast<long long>(a[2]) << 32) | (static_cast<long long>(a[3] << 1) | turn) };
+    return b;
 }
 
 // プレイヤーを反転する
-std::pair<long long, long long> transpose_player_pair(std::pair<long long, long long>& p) {
-    int turn = (p.second & 1) ^ 1;
-    std::array<int, PIECE_TYPE_COUNT> a{
-        static_cast<int>(p.first >> 32), static_cast<int>(p.first & ((1LL << 32) - 1)),
-        static_cast<int>(p.second >> 32), static_cast<int>((p.second >> 1) & ((1LL << 31) - 1)),
-    };
-
-    // 先手のビットと後手のビットを入れ替える
-    auto separete_num = my_pow(BOARD_ID_SIZE + 1, PIECE_EACH_COUNT);
-    for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        a[t] = (a[t] % separete_num) * separete_num + a[t] / separete_num;
-    }
-
-    return { (static_cast<long long>(a[0]) << 32) | a[1],(static_cast<long long>(a[2]) << 32) | (static_cast<long long>(a[3] << 1) | turn) };
-}
-
-// hashの独自実装
-class my_hash {
-public:
-    size_t operator()(const std::pair<long long, long long>& p) const {
-        auto hash1 = std::hash<long long>{}(p.first);
-        auto hash2 = std::hash<long long>{}(p.second);
-
-        size_t seed = 0;
-        seed ^= hash1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= hash2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        return seed;
-    }
-};
-
-
-// ボードをゆっくり出力する
-// tの単位はms
-void debug_board(Board& board, int t) {
+Board transpose_player_board(const Board& board) {
+    Board b{};
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto [x, y] = board_id(id);
-        std::cout << std::bitset<PIECE_TYPE_COUNT * 2>(board[id]);
-        if (y == BOARD_SIZE - 1) std::cout << std::endl;
-        else std::cout << " ";
+        assert(((board[id] >> PIECE_TYPE_COUNT) & ((board[id] & ((1 << PIECE_TYPE_COUNT) - 1)) << PIECE_TYPE_COUNT)) == 0);
+        b[id] = (board[id] >> PIECE_TYPE_COUNT) | ((board[id] & ((1 << PIECE_TYPE_COUNT) - 1)) << PIECE_TYPE_COUNT);
     }
-    std::cout << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(t));
+    return b;
 }
 
-// 盤をそのままqueueに突っ込む
-// 幅優先探索、メモ化無し、　駒の個数はその場で数える
-// 計算量:中, メモリ消費量:中
-void simple_search1() {
-    // 手番を一番最後に加える。
-    // 先手:0, 後手:1
-    // board, turn, depth
-    std::queue<std::tuple<Board, int, int>> que;
-    que.emplace();
-    int d = 0, cnt = 0;
-    auto start = std::chrono::system_clock::now();
-    while (!que.empty()) {
-        auto [board, turn, depth] = que.front();
-        que.pop();
-
-        if (depth > d) {
-            auto now = std::chrono::system_clock::now();
-            auto t = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-            std::cout << t << "ms depth:" << depth << ", cnt:" << cnt << ", queue size:" << que.size() << std::endl;
-
-            d = depth;
-            cnt = 1;
-        }
-        else {
-            cnt += 1;
-        }
-
-        //debug_board(board, 100);
-
-        // 終了局面かどうかを確認する
-        auto result = check_status(board);
-        if (result) continue;
-
-        // 盤上で駒を動かす
-        for (int id = 0; id < BOARD_ID_SIZE; id++) {
-            auto p1 = bits_msb(take_pieces(board[id], turn));
-            auto p2 = take_pieces(board[id], turn ^ 1);
-            if (p1 == 0 || p1 < p2) continue;
-
-            board[id] ^= convert_to_square(p1, turn);
-            auto result = check_status(board);
-
-            // 決着していた場合は読まない
-            if (!result) {
-                for (int id2 = 0; id2 < BOARD_ID_SIZE; id2++) {
-                    auto np1 = take_pieces(board[id2], turn);
-                    auto np2 = take_pieces(board[id2], turn ^ 1);
-                    if (id == id2 || np1 >= p1 || np2 >= p1) continue;
-
-                    board[id2] ^= convert_to_square(p1, turn);
-                    que.emplace(board, turn ^ 1, depth + 1);
-                    board[id2] ^= convert_to_square(p1, turn);
-                }
-            }
-
-            board[id] ^= convert_to_square(p1, turn);
-        }
-
-        // 持ち駒を使う
-        auto count = count_board_pieces(board, turn);
-        for (int i = 0; i < PIECE_TYPE_COUNT; i++) {
-            if (count[i] == PIECE_EACH_COUNT) continue;
-
-            const int piece = 1 << i;
+// boardの比較演算子の実装
+namespace std {
+    template<>
+    class less<Board> {
+    public:
+        constexpr bool operator()(const Board& x, const Board& y) const {
             for (int id = 0; id < BOARD_ID_SIZE; id++) {
-                auto p1 = take_pieces(board[id], turn);
-                auto p2 = take_pieces(board[id], turn ^ 1);
-                if (p1 >= piece || p2 >= piece) continue;
-
-                board[id] ^= convert_to_square(piece, turn);
-                que.emplace(board, turn ^ 1, depth + 1);
-                board[id] ^= convert_to_square(piece, turn);
+                if (x[id] == y[id]) continue;
+                return x[id] < y[id];
             }
+            return false;
         }
-    }
-}
-
-// メモ化なし深さ優先探索
-void depth_search1(Board& board, int turn, int& depth, int& cnt) {
-    cnt += 1;
-    if (depth == 0) return;
-
-    //debug_board(board,300);
-
-    // 終了局面かどうかを確認する
-    auto result = check_status(board);
-    if (result) return;
-
-    // 盤上で駒を動かす
-    for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto p1 = bits_msb(take_pieces(board[id], turn));
-        auto p2 = take_pieces(board[id], turn ^ 1);
-        if (p1 == 0 || p1 < p2) continue;
-
-        board[id] ^= convert_to_square(p1, turn);
-        auto result = check_status(board);
-
-        // 決着していた場合は読まない
-        if (!result) {
-            depth -= 1;
-            for (int id2 = 0; id2 < BOARD_ID_SIZE; id2++) {
-                auto np1 = take_pieces(board[id2], turn);
-                auto np2 = take_pieces(board[id2], turn ^ 1);
-                if (id == id2 || np1 >= p1 || np2 >= p1) continue;
-
-                board[id2] ^= convert_to_square(p1, turn);
-                depth_search1(board, turn ^ 1, depth, cnt);
-                board[id2] ^= convert_to_square(p1, turn);
-            }
-            depth += 1;
-        }
-
-        board[id] ^= convert_to_square(p1, turn);
-    }
-
-    // 持ち駒を使う
-    auto count = count_board_pieces(board, turn);
-    for (int i = 0; i < PIECE_TYPE_COUNT; i++) {
-        if (count[i] == PIECE_EACH_COUNT) continue;
-
-        const int piece = 1 << i;
-        depth -= 1;
-        for (int id = 0; id < BOARD_ID_SIZE; id++) {
-            auto p1 = take_pieces(board[id], turn);
-            auto p2 = take_pieces(board[id], turn ^ 1);
-            if (p1 >= piece || p2 >= piece) continue;
-
-            board[id] ^= convert_to_square(piece, turn);
-            depth_search1(board, turn ^ 1, depth, cnt);
-            board[id] ^= convert_to_square(piece, turn);
-        }
-        depth += 1;
-    }
-}
-
-// 深さ優先探索、メモ化無し、boardを変化で保存する分メモリ消費量が少なく速い
-// その代わり深さが固定される
-void simple_search2(int max_depth, int& cnt) {
-    Board board;
-    std::fill(board.begin(), board.end(), 0);
-    depth_search1(board, 0, max_depth, cnt);
-}
-
-// メモ化有り深さ優先探索
-void depth_search2(Board& board, int turn, int& depth, int& cnt, std::unordered_map<std::pair<long long, long long>, bool, my_hash>& mp) {
-    cnt += 1;
-    if (depth == 0) return;
-    auto hp = board_to_pair(board, turn);
-    if (mp.find(hp) != mp.end()) return;
-    mp[hp] = true;
-
-    //debug_board(board,300);
-
-    // 終了局面かどうかを確認する
-    auto result = check_status(board);
-    if (result) return;
-
-    // 盤上で駒を動かす
-    for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto p1 = bits_msb(take_pieces(board[id], turn));
-        auto p2 = take_pieces(board[id], turn ^ 1);
-        if (p1 == 0 || p1 < p2) continue;
-
-        board[id] ^= convert_to_square(p1, turn);
-        auto result = check_status(board);
-
-        // 決着していた場合は読まない
-        if (!result) {
-            depth -= 1;
-            for (int id2 = 0; id2 < BOARD_ID_SIZE; id2++) {
-                auto np1 = take_pieces(board[id2], turn);
-                auto np2 = take_pieces(board[id2], turn ^ 1);
-                if (id == id2 || np1 >= p1 || np2 >= p1) continue;
-
-                board[id2] ^= convert_to_square(p1, turn);
-                depth_search2(board, turn ^ 1, depth, cnt, mp);
-                board[id2] ^= convert_to_square(p1, turn);
-            }
-            depth += 1;
-        }
-
-        board[id] ^= convert_to_square(p1, turn);
-    }
-
-    // 持ち駒を使う
-    auto count = count_board_pieces(board, turn);
-    for (int i = 0; i < PIECE_TYPE_COUNT; i++) {
-        if (count[i] == PIECE_EACH_COUNT) continue;
-
-        const int piece = 1 << i;
-        depth -= 1;
-        for (int id = 0; id < BOARD_ID_SIZE; id++) {
-            auto p1 = take_pieces(board[id], turn);
-            auto p2 = take_pieces(board[id], turn ^ 1);
-            if (p1 >= piece || p2 >= piece) continue;
-
-            board[id] ^= convert_to_square(piece, turn);
-            depth_search2(board, turn ^ 1, depth, cnt, mp);
-            board[id] ^= convert_to_square(piece, turn);
-        }
-        depth += 1;
-    }
-}
-
-// 深さ優先探索、unordered_mapでメモ化、色々なものを変化で保存する
-// 同じ局面を探索しないようになり、queueの分のメモリは削減できる
-// ただハッシュ計算の分1局面当たりの探索速度は遅くなる
-void simple_search3(int max_depth, int& cnt) {
-    Board board;
-    std::unordered_map<std::pair<long long, long long>, bool, my_hash> mp;
-    std::fill(board.begin(), board.end(), 0);
-    depth_search2(board, 0, max_depth, cnt, mp);
+    };
 }
 
 // メモ化有り深さ優先探索
 // 対称な局面は同一視する
-void depth_search3(Board& board, int turn, int& depth, int& cnt, std::unordered_map<std::pair<long long, long long>, bool, my_hash>& mp) {
+// 手番の人のboardが前にあるようにする
+void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) {
+    //debug_board(board, 1000);
     cnt += 1;
     if (depth == 0) return;
-    auto hp = board_to_pair(board, turn);
 
     {
-        auto tmp = hp;
+        auto mn = board;
+        auto tmp = board;
         // 転置
         for (int t = 0; t < 2; t++) {
             // 回転
             for (int i = 0; i < 4; i++) {
-                hp = min(hp, tmp);
-                tmp = rotate_pair(tmp);
+                mn = min(mn, tmp);
+                tmp = rotate_board(tmp);
             }
 
-            tmp = transpose_pair(tmp);
+            tmp = transpose_board(tmp);
         }
+
+        if (mp.contains(mn)) return;
+        mp[mn] = true;
     }
 
-    if (mp.find(hp) != mp.end()) return;
-    if (mp.find(transpose_player_pair(hp)) != mp.end()) return;
-
-    mp[hp] = true;
-
-    //debug_board(board,300);
+    // 今手番の人がboardのbitの後ろ側になる
+    board = transpose_player_board(board);
+    depth -= 1;
 
     // 終了局面かどうかを確認する
     auto result = check_status(board);
@@ -569,55 +232,52 @@ void depth_search3(Board& board, int turn, int& depth, int& cnt, std::unordered_
 
     // 盤上で駒を動かす
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto p1 = bits_msb(take_pieces(board[id], turn));
-        auto p2 = take_pieces(board[id], turn ^ 1);
+        auto p1 = bits_msb(take_pieces(board[id], 1));
+        auto p2 = take_pieces(board[id], 0);
         if (p1 == 0 || p1 < p2) continue;
 
-        board[id] ^= convert_to_square(p1, turn);
+        board[id] ^= convert_to_square(p1, 1);
         auto result = check_status(board);
 
         // 決着していた場合は読まない
         if (!result) {
-            depth -= 1;
             for (int id2 = 0; id2 < BOARD_ID_SIZE; id2++) {
-                auto np1 = take_pieces(board[id2], turn);
-                auto np2 = take_pieces(board[id2], turn ^ 1);
-                if (id == id2 || np1 >= p1 || np2 >= p1) continue;
+                auto np = take_pieces(board[id2], 0) | take_pieces(board[id2], 1);
+                if (id == id2 || np >= p1) continue;
 
-                board[id2] ^= convert_to_square(p1, turn);
-                depth_search3(board, turn ^ 1, depth, cnt, mp);
-                board[id2] ^= convert_to_square(p1, turn);
+                board[id2] ^= convert_to_square(p1, 1);
+                depth_search(board, depth, cnt, mp);
+                board[id2] ^= convert_to_square(p1, 1);
             }
-            depth += 1;
         }
 
-        board[id] ^= convert_to_square(p1, turn);
+        board[id] ^= convert_to_square(p1, 1);
     }
 
     // 持ち駒を使う
-    auto count = count_board_pieces(board, turn);
+    auto count = count_board_pieces(board, 1);
     for (int i = 0; i < PIECE_TYPE_COUNT; i++) {
         if (count[i] == PIECE_EACH_COUNT) continue;
 
         const int piece = 1 << i;
-        depth -= 1;
         for (int id = 0; id < BOARD_ID_SIZE; id++) {
-            auto p1 = take_pieces(board[id], turn);
-            auto p2 = take_pieces(board[id], turn ^ 1);
-            if (p1 >= piece || p2 >= piece) continue;
+            auto p = take_pieces(board[id], 0) | take_pieces(board[id], 1);
+            if (p >= piece) continue;
 
-            board[id] ^= convert_to_square(piece, turn);
-            depth_search3(board, turn ^ 1, depth, cnt, mp);
-            board[id] ^= convert_to_square(piece, turn);
+            board[id] ^= convert_to_square(piece, 1);
+            depth_search(board, depth, cnt, mp);
+            board[id] ^= convert_to_square(piece, 1);
         }
-        depth += 1;
     }
+
+    // 先後を戻す
+    board = transpose_player_board(board);
+    depth += 1;
 }
 
-void simple_search4(int max_depth, int& cnt) {
-    Board board;
-    std::unordered_map<std::pair<long long, long long>, bool, my_hash> mp;
-    std::fill(board.begin(), board.end(), 0);
-    depth_search3(board, 0, max_depth, cnt, mp);
+void simple_search(int max_depth, int& cnt) {
+    Board board{};
+    std::map<Board, bool> mp;
+    depth_search(board, max_depth, cnt, mp);
 }
 

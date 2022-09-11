@@ -15,7 +15,7 @@ constexpr inline int PIECE_EACH_COUNT = 3;
 // 各々の人の駒の個数
 constexpr inline int PIECE_PLAYER_COUNT = PIECE_TYPE_COUNT * PIECE_EACH_COUNT;
 
-using Board = std::array<int, BOARD_ID_SIZE>;
+using Board = std::array<std::uint32_t, BOARD_ID_SIZE>;
 
 // 盤の升目にある駒を2進数のフラグで表現する
 // ビットはPIECE_TYPE_COUNT×2個
@@ -28,16 +28,11 @@ std::pair<int, int> board_id(int id);
 int take_pieces(int square, int turn);
 int convert_to_square(int square, int turn);
 int bits_msb(int v);
-std::optional<bool> check_status(Board& board);
-std::array<int, PIECE_TYPE_COUNT> count_board_pieces(Board& board, int turn);
-std::pair<long long, long long> board_to_pair(Board& board, int& turn);
-Board pair_to_board(std::pair<long long, long long>& p);
-std::pair<long long, long long> rotate_pair(std::pair<long long, long long>& p);
-std::pair<long long, long long> transpose_pair(std::pair<long long, long long>& p);
-std::pair<long long, long long> transpose_player_pair(std::pair<long long, long long>& p);
-void simple_search1();
-void simple_search2(int max_depth, int& cnt);
-void simple_search3(int max_depth, int& cnt);
-void simple_search4(int max_depth, int& cnt);
+std::optional<bool> check_status(const Board& board);
+std::array<int, PIECE_TYPE_COUNT> count_board_pieces(const Board& board, int turn);
+Board rotate_board(const Board& p);
+Board transpose_board(const Board& p);
+Board transpose_player_board(const Board& p);
+void simple_search(int max_depth, int& cnt);
 
 #endif // FORWARD_H_
