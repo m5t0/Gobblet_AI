@@ -56,7 +56,7 @@ TEST(check_status_test, test1) {
     };
     Board board6{
         0,0,0,0b1000'0000,
-        0,0,0b100'0000,0,
+        0,0,0b100'1000,0,
         0,0b10'0000,0,0,
         0b1'0000,0,0,0,
     };
@@ -71,7 +71,7 @@ TEST(check_status_test, test1) {
     ASSERT_EQ(check_status(board3), true);
     ASSERT_EQ(check_status(board4), true);
     ASSERT_EQ(check_status(board5), true);
-    ASSERT_EQ(check_status(board6), false);
+    ASSERT_EQ(check_status(board6), std::nullopt);
     ASSERT_EQ(check_status(board7), std::nullopt);
 }
 
@@ -270,7 +270,7 @@ TEST(transpose_player_board_test, test1) {
 }
 
 TEST(simple_search_test, test1) {
-    constexpr int max_depth = 5;
+    constexpr int max_depth = 7;
     int cnt = 0;
     auto start = std::chrono::system_clock::now();
     simple_search(max_depth, cnt);

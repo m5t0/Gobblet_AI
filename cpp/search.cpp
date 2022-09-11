@@ -77,8 +77,8 @@ std::optional<bool> check_status(const Board& board) {
         bool f1 = true, f2 = true;
         for (int y = 0; y < BOARD_SIZE; y++) {
             auto square = board[board_id(x, y)];
-            if (take_pieces(square, 0) == 0) f1 = false;
-            if (take_pieces(square, 1) == 0) f2 = false;
+            if (take_pieces(square, 0) == 0 || take_pieces(square, 0) < take_pieces(square, 1)) f1 = false;
+            if (take_pieces(square, 1) == 0 || take_pieces(square, 1) < take_pieces(square, 0)) f2 = false;
         }
         if (f1) return true;
         if (f2) return false;
@@ -89,8 +89,8 @@ std::optional<bool> check_status(const Board& board) {
         bool f1 = true, f2 = true;
         for (int x = 0; x < BOARD_SIZE; x++) {
             auto square = board[board_id(x, y)];
-            if (take_pieces(square, 0) == 0) f1 = false;
-            if (take_pieces(square, 1) == 0) f2 = false;
+            if (take_pieces(square, 0) == 0 || take_pieces(square, 0) < take_pieces(square, 1)) f1 = false;
+            if (take_pieces(square, 1) == 0 || take_pieces(square, 1) < take_pieces(square, 0)) f2 = false;
         }
         if (f1) return true;
         if (f2) return false;
@@ -102,8 +102,8 @@ std::optional<bool> check_status(const Board& board) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             int y = x;
             auto square = board[board_id(x, y)];
-            if (take_pieces(square, 0) == 0) f1 = false;
-            if (take_pieces(square, 1) == 0) f2 = false;
+            if (take_pieces(square, 0) == 0 || take_pieces(square, 0) < take_pieces(square, 1)) f1 = false;
+            if (take_pieces(square, 1) == 0 || take_pieces(square, 1) < take_pieces(square, 0)) f2 = false;
         }
         if (f1) return true;
         if (f2) return false;
@@ -115,8 +115,8 @@ std::optional<bool> check_status(const Board& board) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             int y = BOARD_SIZE - 1 - x;
             auto square = board[board_id(x, y)];
-            if (take_pieces(square, 0) == 0) f1 = false;
-            if (take_pieces(square, 1) == 0) f2 = false;
+            if (take_pieces(square, 0) == 0 || take_pieces(square, 0) < take_pieces(square, 1)) f1 = false;
+            if (take_pieces(square, 1) == 0 || take_pieces(square, 1) < take_pieces(square, 0)) f2 = false;
         }
         if (f1) return true;
         if (f2) return false;
@@ -222,13 +222,14 @@ void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) 
         mp[mn] = true;
     }
 
+    // 終了局面かどうかを確認する
+    auto result = check_status(board);
+    if (result) return;
+
     // 今手番の人がboardのbitの後ろ側になる
     board = transpose_player_board(board);
     depth -= 1;
 
-    // 終了局面かどうかを確認する
-    auto result = check_status(board);
-    if (result) return;
 
     // 盤上で駒を動かす
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
