@@ -25,14 +25,13 @@ using Board = std::array<std::uint32_t, BOARD_ID_SIZE>;
 
 int board_id(int x, int y);
 std::pair<int, int> board_id(int id);
-int take_pieces(int square, int turn);
-int convert_to_square(int square, int turn);
-int bits_msb(int v);
+std::uint32_t take_pieces(std::uint32_t square, int turn);
+std::uint32_t convert_to_square(std::uint32_t square, int turn);
 std::optional<bool> check_status(const Board& board);
 std::array<int, PIECE_TYPE_COUNT> count_board_pieces(const Board& board, int turn);
 Board rotate_board(const Board& p);
 Board transpose_board(const Board& p);
 Board transpose_player_board(const Board& p);
-void simple_search(int max_depth, int& cnt);
+void simple_search(long long max_depth, long long& cnt, long long& cnt2, std::map<Board, bool>& mp);
 
 #endif // FORWARD_H_

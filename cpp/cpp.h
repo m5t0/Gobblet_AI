@@ -19,6 +19,7 @@
 #include <bitset>
 #include <thread>
 #include <chrono>
+#include <bit>
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照します。
 

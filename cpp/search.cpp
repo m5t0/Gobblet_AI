@@ -4,18 +4,6 @@
 #include "forward.h"
 #include "cpp.h"
 
-// 繰り返し二乗法
-template<class T>
-T my_pow(T x, T n) {
-    T res = 1;
-    while (n > 0) {
-        if (n & 1) res = res * x;
-        x = x * x;
-        n >>= 1;
-    }
-    return res;
-}
-
 // ボードをゆっくり出力する
 // tの単位はms
 void debug_board(const Board& board, int t) {
@@ -44,7 +32,7 @@ std::pair<int, int> board_id(int id) {
 // boardのマスのフラッグから手番の人の駒だけ取り出す
 // turn=0 => 先手
 // turn=1 => 後手
-int take_pieces(int square, int turn) {
+std::uint32_t take_pieces(std::uint32_t square, int turn) {
     assert(turn == 0 || turn == 1);
     return (square >> (PIECE_TYPE_COUNT * turn)) & ((1 << PIECE_TYPE_COUNT) - 1);
 }
@@ -52,20 +40,9 @@ int take_pieces(int square, int turn) {
 // 手番の人の駒からboardのマスのフラッグに変換する
 // turn=0 => 先手
 // turn=1 => 後手
-int convert_to_square(int square, int turn) {
+std::uint32_t convert_to_square(std::uint32_t square, int turn) {
     assert(turn == 0 || turn == 1);
     return square << PIECE_TYPE_COUNT * turn;
-}
-
-// 最も上にある1であるビットだけ取り出す
-int bits_msb(int v)
-{
-    v = v | (v >> 1);
-    v = v | (v >> 2);
-    v = v | (v >> 4);
-    v = v | (v >> 8);
-    v = v | (v >> 16);
-    return v ^ (v >> 1);
 }
 
 // 先手が勝ったらtrue, 負けたらfalse
@@ -181,7 +158,7 @@ Board transpose_player_board(const Board& board) {
     return b;
 }
 
-// boardの比較演算子の実装
+// Boardの比較演算子の実装
 namespace std {
     template<>
     class less<Board> {
@@ -199,10 +176,9 @@ namespace std {
 // メモ化有り深さ優先探索
 // 対称な局面は同一視する
 // 手番の人のboardが前にあるようにする
-void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) {
+void depth_search(Board& board, long long depth, long long& cnt, long long& cnt2, std::map<Board, bool>& mp) {
     //debug_board(board, 1000);
     cnt += 1;
-    if (depth == 0) return;
 
     {
         auto mn = board;
@@ -218,22 +194,27 @@ void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) 
             tmp = transpose_board(tmp);
         }
 
-        if (mp.contains(mn)) return;
+        if (mp.contains(mn)) {
+            cnt2 += 1;
+            return;
+        }
         mp[mn] = true;
     }
+
+    if (depth == 0) return;
 
     // 終了局面かどうかを確認する
     auto result = check_status(board);
     if (result) return;
 
-    // 今手番の人がboardのbitの後ろ側になる
+    // 今手番の人がboardのbitの桁が大きい側になる
     board = transpose_player_board(board);
     depth -= 1;
 
 
     // 盤上で駒を動かす
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto p1 = bits_msb(take_pieces(board[id], 1));
+        auto p1 = std::bit_floor(take_pieces(board[id], 1));
         auto p2 = take_pieces(board[id], 0);
         if (p1 == 0 || p1 < p2) continue;
 
@@ -247,7 +228,7 @@ void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) 
                 if (id == id2 || np >= p1) continue;
 
                 board[id2] ^= convert_to_square(p1, 1);
-                depth_search(board, depth, cnt, mp);
+                depth_search(board, depth, cnt, cnt2, mp);
                 board[id2] ^= convert_to_square(p1, 1);
             }
         }
@@ -266,7 +247,7 @@ void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) 
             if (p >= piece) continue;
 
             board[id] ^= convert_to_square(piece, 1);
-            depth_search(board, depth, cnt, mp);
+            depth_search(board, depth, cnt, cnt2, mp);
             board[id] ^= convert_to_square(piece, 1);
         }
     }
@@ -276,9 +257,8 @@ void depth_search(Board& board, int depth, int& cnt, std::map<Board, bool>& mp) 
     depth += 1;
 }
 
-void simple_search(int max_depth, int& cnt) {
+void simple_search(long long max_depth, long long& cnt, long long& cnt2, std::map<Board, bool>& mp) {
     Board board{};
-    std::map<Board, bool> mp;
-    depth_search(board, max_depth, cnt, mp);
+    depth_search(board, max_depth, cnt, cnt2, mp);
 }
 

@@ -19,10 +19,6 @@ TEST(convert_to_square_test, test1) {
     ASSERT_EQ(convert_to_square(0b1011, 1), 0b1011'0000);
 }
 
-TEST(bits_msb_test, test1) {
-    ASSERT_EQ(bits_msb(0b100110), 0b100000);
-}
-
 TEST(check_status_test, test1) {
     Board board{
         0,0,0,0,
@@ -142,7 +138,7 @@ TEST(rotate_board_test, test1) {
     };
 
     int turn = 0;
-    for (int i = 0; i < boards.size();i++) {
+    for (int i = 0; i < boards.size(); i++) {
         auto b = boards[i];
         for (int j = 0; j < 4; j++) b = rotate_board(b);
         ASSERT_EQ(b, boards[i]);
@@ -270,11 +266,12 @@ TEST(transpose_player_board_test, test1) {
 }
 
 TEST(simple_search_test, test1) {
-    constexpr int max_depth = 7;
-    int cnt = 0;
+    constexpr int max_depth = 8;
+    long long cnt = 0, cnt2 = 0;
+    std::map<Board, bool> mp;
     auto start = std::chrono::system_clock::now();
-    simple_search(max_depth, cnt);
+    simple_search(max_depth, cnt, cnt2, mp);
     auto end = std::chrono::system_clock::now();
     auto t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "depth:" << max_depth << ", cnt:" << cnt << std::endl;
+    std::cout << "depth:" << max_depth << ", cnt:" << cnt << ", cnt2:" << cnt2 << ", mp size:" << mp.size() << ", mp maxsize:" << mp.max_size() << std::endl;
 }
