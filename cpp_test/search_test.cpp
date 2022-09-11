@@ -1,149 +1,280 @@
 #include <gtest/gtest.h>
 #include "forward.h"
 
-std::array<Board, 7> boards{
-std::make_pair(
-    0b0000'1111'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000,
-    0b0000'0000'0000'0000'0000'0000'0000'0000'0100'0000'0000'0010'0000'0000'0000'0000
-),
-std::make_pair(
-    0b0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0100'0100'0100'0100,
-    0b0000'0000'0000'0010'0000'0000'0000'0000'0000'1000'0000'0000'0000'0000'0000'0000
-),
-std::make_pair(
-    0b0000'0000'0000'0000'0000'0000'0000'0000'1000'0100'0010'0001'0000'0000'0000'0000,
-    0b0000'0000'0000'0000'0000'0000'0000'0000'0000'1000'0000'0000'0100'0000'0000'0000
-),
-std::make_pair(
-    0b0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'1000'0000'0010'0000,
-    0b0000'0000'0000'0000'0001'0010'0100'1000'0000'0000'0000'0000'0000'0000'0000'0000
-),
-std::make_pair(
-    0b0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'0000'1000'0000'0010'0000,
-    0b1000'0000'0000'0000'0000'0100'0000'0000'0000'0000'0010'0000'0000'0000'0000'0001
-),
-std::make_pair(
-    0b0001'0000'0000'0000'0000'0010'0000'0000'0000'0000'0100'0000'0000'0000'0000'1000,
-    0b1000'0000'0000'0000'0000'0100'0000'0000'0000'0000'0010'0000'0000'0000'0000'0100
-),
-std::make_pair(
-    0b0001'0000'0000'0000'0010'0010'0000'0000'0000'0000'0100'0000'1000'0000'0000'0000,
-    0b1000'0000'1000'0000'0000'0100'0000'1000'0000'0000'0010'0000'0000'0000'0000'0100
-)
-};
+TEST(board_id_test, test1) {
+    // 0,1,2,3
+    // 4,5,6
+    ASSERT_EQ(board_id(1, 2), 6);
+    ASSERT_EQ(board_id(6), std::make_pair(1, 2));
+}
 
-void print_board(Board& b) {
-    std::cout << "first" << std::endl;
-    for (int k = 0; k < BOARD_SIZE; k++) {
-        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-            std::cout << std::bitset<BOARD_SIZE>(b.first >> (BOARD_ID_SIZE * t + BOARD_SIZE * k)) << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "second" << std::endl;
-    for (int k = 0; k < BOARD_SIZE; k++) {
-        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-            std::cout << std::bitset<BOARD_SIZE>(b.first >> (BOARD_ID_SIZE * t + BOARD_SIZE * k)) << " ";
-        }
-        std::cout << std::endl;
-    }
+TEST(take_pieces_test, test1) {
+    // 1011 1101
+    ASSERT_EQ(take_pieces(0b1011'1101, 0), 0b1101);
+    ASSERT_EQ(take_pieces(0b1011'1101, 1), 0b1011);
+}
+
+TEST(convert_to_square_test, test1) {
+    ASSERT_EQ(convert_to_square(0b1011, 0), 0b1011);
+    ASSERT_EQ(convert_to_square(0b1011, 1), 0b1011'0000);
+}
+
+TEST(bits_msb_test, test1) {
+    ASSERT_EQ(bits_msb(0b100110), 0b100000);
 }
 
 TEST(check_status_test, test1) {
-    std::array<std::optional<bool>, 8> ans{ true, true, true, false, false, true, std::nullopt };
-    for (int i = 0; i < boards.size(); i++) ASSERT_EQ(check_status(boards[i]), ans[i]);
+    Board board{
+        0,0,0,0,
+        1,1,1,1,
+        0,0,0,0,
+        0,0,0,0,
+    };
+    Board board2{
+        0,0,1,0,
+        0,0,1,0,
+        0,0,1,0,
+        0,0,1,0,
+    };
+    Board board3{
+        1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        0,0,0,1,
+    };
+    Board board4{
+        0,0,0,1,
+        0,0,1,0,
+        0,1,0,0,
+        1,0,0,0,
+    };
+    Board board5{
+        0,0,0,0b1000,
+        0,0,0b100,0,
+        0,0b10,0,0,
+        1,0,0,0,
+    };
+    Board board6{
+        0,0,0,0b1000'0000,
+        0,0,0b100'0000,0,
+        0,0b10'0000,0,0,
+        0b1'0000,0,0,0,
+    };
+    Board board7{
+        0,0,0,0b1000'000,
+        0,0,1,0,
+        0,0b10'000,0,0,
+        0b1'000,0,0,0,
+    };
+    ASSERT_EQ(check_status(board), true);
+    ASSERT_EQ(check_status(board2), true);
+    ASSERT_EQ(check_status(board3), true);
+    ASSERT_EQ(check_status(board4), true);
+    ASSERT_EQ(check_status(board5), true);
+    ASSERT_EQ(check_status(board6), false);
+    ASSERT_EQ(check_status(board7), std::nullopt);
 }
 
-TEST(flipHorizontal_test, test1) {
+TEST(count_board_pieces_test, test1) {
+    Board board{
+        0,0,0,0b1,
+        0,0,0b100,0,
+        0,0b1000,0,0,
+        0b1'0000,0b10'0000,0b1000'0000,0,
+    };
+
+    auto c1 = count_board_pieces(board, 0), c2 = count_board_pieces(board, 1);
+    std::array<int, 4> a1{ 1,0,1,1 }, a2{ 1,1,0,1 };
+    ASSERT_EQ(c1, a1);
+    ASSERT_EQ(c2, a2);
+}
+
+TEST(rotate_board_test, test1) {
+    std::vector<Board> boards{
+    {
+        0,0,0,0b1,
+        0,0,0b100,0,
+        0,0b1000,0,0,
+        0b1'0000,0b10'0000,0b1000'0000,0,
+    },
+    {
+        0,0,0,0,
+        1,1,1,0b10,
+        0,0,0,0,
+        0,0,0,0,
+    },
+    {
+        0,0,0b100,0,
+        0,0,1,0,
+        0,0,1,0,
+        0,0,1,0,
+    },
+    {
+        1,0,0,0,
+        0,1,0,0,
+        0,0,0b1000,0,
+        0,0,0,0b10'0000,
+    },
+    {
+        0,0,0,1,
+        0,0,0b1'0000,0,
+        0,1,0,0,
+        1,0,0,0,
+    },
+    {
+        0,0,0,0b1000,
+        0,0,0b100,0,
+        0,0b10,0,0,
+        1,0,0,0,
+    },
+    {
+        0,0,0,0b1000'0000,
+        0,0,0b100'0000,0,
+        0,0b10'0000,0,0,
+        0b1'0000,0,0,0,
+    },
+    {
+        0,0,0,0b1000'0000,
+        0,0,1,0,
+        0,0b10'0000,0,0,
+        0b1'0000,0,0,0,
+    }
+    };
+
     int turn = 0;
-    for (int i = 0; i < boards.size(); i++) {
+    for (int i = 0; i < boards.size();i++) {
         auto b = boards[i];
-        for (int j = 0; j < 2; j++) {
-            print_board(b);
-            b = flipHorizontal(b);
-        }
-        ASSERT_EQ(boards[i], b);
+        for (int j = 0; j < 4; j++) b = rotate_board(b);
+        ASSERT_EQ(b, boards[i]);
     }
 }
 
-TEST(flipVertical_test, test1) {
+TEST(transpose_board_test, test1) {
+    std::vector<Board> boards{
+    {
+        0,0,0,0b1,
+        0,0,0b100,0,
+        0,0b1000,0,0,
+        0b1'0000,0b10'0000,0b1000'0000,0,
+    },
+    {
+        0,0,0,0,
+        1,1,1,0b10,
+        0,0,0,0,
+        0,0,0,0,
+    },
+    {
+        0,0,0b100,0,
+        0,0,1,0,
+        0,0,1,0,
+        0,0,1,0,
+    },
+    {
+        1,0,0,0,
+        0,1,0,0,
+        0,0,0b1000,0,
+        0,0,0,0b10'0000,
+    },
+    {
+        0,0,0,1,
+        0,0,0b1'0000,0,
+        0,1,0,0,
+        1,0,0,0,
+    },
+    {
+        0,0,0,0b1000,
+        0,0,0b100,0,
+        0,0b10,0,0,
+        1,0,0,0,
+    },
+    {
+        0,0,0,0b1000'0000,
+        0,0,0b100'0000,0,
+        0,0b10'0000,0,0,
+        0b1'0000,0,0,0,
+    },
+    {
+        0,0,0,0b1000'0000,
+        0,0,1,0,
+        0,0b10'0000,0,0,
+        0b1'0000,0,0,0,
+    }
+    };
+
     int turn = 0;
     for (int i = 0; i < boards.size(); i++) {
         auto b = boards[i];
-        for (int j = 0; j < 2; j++) {
-            print_board(b);
-            b = flipVertical(b);
-        }
-        ASSERT_EQ(boards[i], b);
+        for (int j = 0; j < 2; j++) b = transpose_board(b);
+        ASSERT_EQ(b, boards[i]);
     }
 }
 
-TEST(flipDiagonalA1H8_test, test1) {
-    int turn = 0;
-    for (int i = 0; i < boards.size(); i++) {
-        auto b = boards[i];
-        for (int j = 0; j < 2; j++) {
-            print_board(b);
-            b = flipDiagonalA1H8(b);
+TEST(transpose_player_board_test, test1) {
+    std::vector<Board> boards{
+        {
+            0,0,0,0b1,
+            0,0,0b100,0,
+            0,0b1000,0,0,
+            0b1'0000,0b10'0000,0b1000'0000,0,
+        },
+        {
+            0,0,0,0,
+            1,1,1,0b10,
+            0,0,0,0,
+            0,0,0,0,
+        },
+        {
+            0,0,0b100,0,
+            0,0,1,0,
+            0,0,1,0,
+            0,0,1,0,
+        },
+        {
+            1,0,0,0,
+            0,1,0,0,
+            0,0,0b1000,0,
+            0,0,0,0b10'0000,
+        },
+        {
+            0,0,0,1,
+            0,0,0b1'0000,0,
+            0,1,0,0,
+            1,0,0,0,
+        },
+        {
+            0,0,0,0b1000,
+            0,0,0b100,0,
+            0,0b10,0,0,
+            1,0,0,0,
+        },
+        {
+            0,0,0,0b1000'0000,
+            0,0,0b100'0000,0,
+            0,0b10'0000,0,0,
+            0b1'0000,0,0,0,
+        },
+        {
+            0,0,0,0b1000'0000,
+            0,0,1,0,
+            0,0b10'0000,0,0,
+            0b1'0000,0,0,0,
         }
-        ASSERT_EQ(boards[i], b);
-    }
-}
+    };
 
-TEST(flipDiagonalA8H1_test, test1) {
     int turn = 0;
     for (int i = 0; i < boards.size(); i++) {
         auto b = boards[i];
-        for (int j = 0; j < 2; j++) {
-            print_board(b);
-            b = flipDiagonalA8H1(b);
-        }
-        ASSERT_EQ(boards[i], b);
-    }
-}
-
-TEST(rotateClockwise90_test, test1) {
-    int turn = 0;
-    for (int i = 0; i < boards.size(); i++) {
-        auto b = boards[i];
-        for (int j = 0; j < 4; j++) {
-            print_board(b);
-            b = rotateClockwise90(b);
-        }
-        ASSERT_EQ(boards[i], b);
-    }
-}
-
-TEST(rotateCounterclockwise90_test, test1) {
-    int turn = 0;
-    for (int i = 0; i < boards.size(); i++) {
-        auto b = boards[i];
-        for (int j = 0; j < 4; j++) {
-            print_board(b);
-            b = rotateCounterclockwise90(b);
-        }
-        ASSERT_EQ(boards[i], b);
-    }
-}
-
-TEST(rotate180_test, test1) {
-    int turn = 0;
-    for (int i = 0; i < boards.size(); i++) {
-        auto b = boards[i];
-        for (int j = 0; j < 4; j++) {
-            print_board(b);
-            b = rotate180(b);
-        }
-        ASSERT_EQ(boards[i], b);
+        for (int j = 0; j < 4; j++) b = transpose_player_board(b);
+        ASSERT_EQ(b, boards[i]);
     }
 }
 
 TEST(simple_search_test, test1) {
-    constexpr int max_depth = 7;
+    constexpr int max_depth = 5;
     int cnt = 0;
     auto start = std::chrono::system_clock::now();
     simple_search(max_depth, cnt);
     auto end = std::chrono::system_clock::now();
     auto t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << t << "ms depth:" << max_depth << ", cnt:" << cnt << std::endl;
+    std::cout << "depth:" << max_depth << ", cnt:" << cnt << std::endl;
 }
