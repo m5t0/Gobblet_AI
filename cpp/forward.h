@@ -33,9 +33,9 @@ Board rotate_board(const Board& p);
 Board transpose_board(const Board& p);
 Board transpose_player_board(const Board& p);
 void simple_search(long long max_depth, long long& cnt, long long& cnt2, std::map<Board, bool>& mp);
-boost::multiprecision::tom_int count_position_wrapper();
-boost::multiprecision::tom_int count_position_wrapper2();
-boost::multiprecision::tom_int count_position_wrapper2_1();
-boost::multiprecision::tom_int count_position_all();
+boost::multiprecision::cpp_int count_position_wrapper();
+boost::multiprecision::cpp_int count_position_wrapper2();
+boost::multiprecision::cpp_int count_position_wrapper2_1();
+boost::multiprecision::cpp_int count_position_all();
 
 #endif // FORWARD_H_

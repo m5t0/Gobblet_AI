@@ -297,7 +297,7 @@ struct Comb {
 // 一番上にある駒だけ調べて最後にそれ以外の駒を数える
 // board id, 先手がどの種類まで使っているか, 後手がどの種類まで使っているか, Flag, 使った駒の個数, 組み合わせの構造体
 // 1列も揃っていない局面数を返す
-boost::multiprecision::tom_int count_position(int id, int type, int type2, Flag f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb) {
+boost::multiprecision::cpp_int count_position(int id, int type, int type2, Flag f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb) {
     if (id != 0 && id % BOARD_SIZE == 0) {
         if (f.row[0] || f.row[1]) return 0;
         f.row[0] = f.row[1] = true;
@@ -336,7 +336,7 @@ boost::multiprecision::tom_int count_position(int id, int type, int type2, Flag 
     }
 
     Flag b{ f };
-    boost::multiprecision::tom_int res = 0;
+    boost::multiprecision::cpp_int res = 0;
     auto id2 = board_id(id);
     {
         for (int p = 0; p < 2; p++) {
@@ -372,7 +372,7 @@ boost::multiprecision::tom_int count_position(int id, int type, int type2, Flag 
     return res;
 }
 
-boost::multiprecision::tom_int count_position_wrapper() {
+boost::multiprecision::cpp_int count_position_wrapper() {
     std::array<int, PIECE_TYPE_COUNT * 2> cnt;
     std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
     Flag f(cnt);
@@ -403,7 +403,7 @@ struct Flag2 {
 };
 
 // 先手と後手の駒が少なくとも一つ存在するマスの位置と、盤で一番上(鉛直上向き)に置いてある先手と後手の駒の個数を固定したとき、その条件を満たす局面の数を返す関数
-boost::multiprecision::tom_int cnt_dfs(int type, Flag2& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb) {
+boost::multiprecision::cpp_int cnt_dfs(int type, Flag2& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb) {
     if (type == PIECE_TYPE_COUNT) {
         if (std::accumulate(used_cnt.begin(), used_cnt.begin() + PIECE_TYPE_COUNT, 0) != f.sum[0] - f.mod_cnt[0] ||
             std::accumulate(used_cnt.begin() + PIECE_TYPE_COUNT, used_cnt.begin() + PIECE_TYPE_COUNT * 2, 0) != f.sum[1] - f.mod_cnt[1]) {
@@ -415,7 +415,7 @@ boost::multiprecision::tom_int cnt_dfs(int type, Flag2& f, std::array<int, 2 * P
             sum[t - 1] = sum[t] + used_cnt[t] + used_cnt[t + PIECE_TYPE_COUNT];
         }
 
-        boost::multiprecision::tom_int res = 1;
+        boost::multiprecision::cpp_int res = 1;
         for (int p = 0; p < 2; p++) {
             auto s = std::accumulate(used_cnt.begin() + PIECE_TYPE_COUNT * p, used_cnt.begin() + PIECE_TYPE_COUNT * (p + 1), 0);
             for (int t = PIECE_TYPE_COUNT * p; t < PIECE_TYPE_COUNT * (p + 1); t++) {
@@ -442,7 +442,7 @@ boost::multiprecision::tom_int cnt_dfs(int type, Flag2& f, std::array<int, 2 * P
 
     auto s1 = std::accumulate(used_cnt.begin(), used_cnt.begin() + PIECE_TYPE_COUNT, 0);
     auto s2 = std::accumulate(used_cnt.begin() + PIECE_TYPE_COUNT, used_cnt.begin() + PIECE_TYPE_COUNT * 2, 0);
-    boost::multiprecision::tom_int res = 0;
+    boost::multiprecision::cpp_int res = 0;
     for (int i = 0; i <= std::min(f.cnt[type], f.sum[0] - f.mod_cnt[0] - s1); i++) {
         used_cnt[type] += i;
         for (int j = 0; j <= std::min(f.cnt[type + PIECE_TYPE_COUNT], f.sum[1] - f.mod_cnt[1] - s2); j++) {
@@ -457,7 +457,7 @@ boost::multiprecision::tom_int cnt_dfs(int type, Flag2& f, std::array<int, 2 * P
 }
 
 // 1列も揃っていない局面数を調べる、より計算量が少なそうな解法
-boost::multiprecision::tom_int count_position2(int id, Flag2 f, const Comb& comb, std::array<std::array<boost::multiprecision::tom_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
+boost::multiprecision::cpp_int count_position2(int id, Flag2 f, const Comb& comb, std::array<std::array<boost::multiprecision::cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     if (id != 0 && id % BOARD_SIZE == 0) {
         if (f.row[0] || f.row[1]) return 0;
         f.row[0] = f.row[1] = true;
@@ -473,7 +473,7 @@ boost::multiprecision::tom_int count_position2(int id, Flag2 f, const Comb& comb
     }
 
     Flag2 b{ f };
-    boost::multiprecision::tom_int res = 0;
+    boost::multiprecision::cpp_int res = 0;
     auto id2 = board_id(id);
     {
         for (int p = 0; p < 2; p++) {
@@ -502,18 +502,18 @@ boost::multiprecision::tom_int count_position2(int id, Flag2 f, const Comb& comb
     return res;
 }
 
-boost::multiprecision::tom_int count_position_wrapper2() {
+boost::multiprecision::cpp_int count_position_wrapper2() {
     std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
     std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
     Flag2 f(cnt);
     Comb comb(BOARD_ID_SIZE + 3);
-    std::array<std::array<boost::multiprecision::tom_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
-    for (auto& m : memo) std::fill(m.begin(), m.end(), boost::multiprecision::tom_int(-1));
+    std::array<std::array<boost::multiprecision::cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
+    for (auto& m : memo) std::fill(m.begin(), m.end(), boost::multiprecision::cpp_int(-1));
     return count_position2(0, f, comb, memo);
 }
 
 // 少なくとも1列は揃っている局面数
-boost::multiprecision::tom_int count_position2_1(int id, bool ok, Flag2 f, const Comb& comb, std::array<std::array<boost::multiprecision::tom_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
+boost::multiprecision::cpp_int count_position2_1(int id, bool ok, Flag2 f, const Comb& comb, std::array<std::array<boost::multiprecision::cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     if (id != 0 && id % BOARD_SIZE == 0) {
         ok = ok || f.row[0] || f.row[1];
         f.row[0] = f.row[1] = true;
@@ -529,7 +529,7 @@ boost::multiprecision::tom_int count_position2_1(int id, bool ok, Flag2 f, const
     }
 
     Flag2 b{ f };
-    boost::multiprecision::tom_int res = 0;
+    boost::multiprecision::cpp_int res = 0;
     auto id2 = board_id(id);
     {
         for (int p = 0; p < 2; p++) {
@@ -558,28 +558,28 @@ boost::multiprecision::tom_int count_position2_1(int id, bool ok, Flag2 f, const
     return res;
 }
 
-boost::multiprecision::tom_int count_position_wrapper2_1() {
+boost::multiprecision::cpp_int count_position_wrapper2_1() {
     std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
     std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
     //std::fill(cnt.begin(), cnt.begin()+PIECE_TYPE_COUNT, 1);
     Flag2 f(cnt);
     Comb comb(BOARD_ID_SIZE + 3);
-    std::array<std::array<boost::multiprecision::tom_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
-    for (auto& m : memo) std::fill(m.begin(), m.end(), boost::multiprecision::tom_int(-1));
+    std::array<std::array<boost::multiprecision::cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
+    for (auto& m : memo) std::fill(m.begin(), m.end(), boost::multiprecision::cpp_int(-1));
     return count_position2_1(0, false, f, comb, memo);
 }
 
 // 物理的にあり得る局面数を計算する
 // 答えが5'972'215'100'065'114'586'401
-boost::multiprecision::tom_int count_position_all() {
+boost::multiprecision::cpp_int count_position_all() {
     Comb comb(BOARD_ID_SIZE + 3);
-    boost::multiprecision::tom_int cnt = 1;
+    boost::multiprecision::cpp_int cnt = 1;
     for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-        boost::multiprecision::tom_int tmp = 1;
+        boost::multiprecision::cpp_int tmp = 1;
         for (int i0 = 0; i0 <= PIECE_EACH_COUNT; i0++) {
             for (int i1 = 0; i1 <= PIECE_EACH_COUNT; i1++) {
                 if (i0 == 0 && i1 == 0) continue;
-                tmp += boost::multiprecision::tom_int(comb.c(BOARD_ID_SIZE, i0)) * boost::multiprecision::tom_int(comb.c(BOARD_ID_SIZE - i0, i1));
+                tmp += boost::multiprecision::cpp_int(comb.c(BOARD_ID_SIZE, i0)) * boost::multiprecision::cpp_int(comb.c(BOARD_ID_SIZE - i0, i1));
             }
         }
         std::cout << cnt << " " << tmp << std::endl;

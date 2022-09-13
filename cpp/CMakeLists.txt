@@ -5,9 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 # ソースをこのプロジェクトの実行可能ファイルに追加します。
 add_library (cpp "search.cpp")
-add_subdirectory(${PROJECT_SOURCE_DIR}/libtommath ${PROJECT_BINARY_DIR}/libtommath)
-target_include_directories(cpp PUBLIC ${PROJECT_SOURCE_DIR}/boost_1_80_0 ${PROJECT_SOURCE_DIR}/libtommath)
-target_link_libraries(cpp PUBLIC ${PROJECT_BINARY_DIR}/libtommath/tommath.lib)
+target_include_directories(cpp PUBLIC ${PROJECT_SOURCE_DIR}/boost_1_80_0)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET cpp PROPERTY CXX_STANDARD 20)
