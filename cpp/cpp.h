@@ -20,6 +20,8 @@
 #include <thread>
 #include <chrono>
 #include <bit>
+#include <numeric>
+#include <boost/multiprecision/tommath.hpp>
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照します。
 

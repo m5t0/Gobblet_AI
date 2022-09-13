@@ -269,9 +269,26 @@ TEST(simple_search_test, test1) {
     constexpr int max_depth = 8;
     long long cnt = 0, cnt2 = 0;
     std::map<Board, bool> mp;
-    auto start = std::chrono::system_clock::now();
-    simple_search(max_depth, cnt, cnt2, mp);
-    auto end = std::chrono::system_clock::now();
-    auto t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    //simple_search(max_depth, cnt, cnt2, mp);
     std::cout << "depth:" << max_depth << ", cnt:" << cnt << ", cnt2:" << cnt2 << ", mp size:" << mp.size() << ", mp maxsize:" << mp.max_size() << std::endl;
+}
+
+TEST(count_position_wrapper_test, test1) {
+    //auto cnt = count_position_wrapper();
+    //std::cout << "cnt:" << cnt << std::endl;
+}
+
+TEST(count_position_wrapper2_test, test1) {
+    auto cnt = count_position_wrapper2();
+    std::cout << "cnt:" << cnt << std::endl;
+}
+
+TEST(count_position_wrapper2_1_test, test1) {
+    //auto cnt = count_position_wrapper2_1();
+    //std::cout << "cnt:" << cnt << std::endl;
+}
+
+TEST(count_position_all_test, test1) {
+    //auto cnt = count_position_all();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
