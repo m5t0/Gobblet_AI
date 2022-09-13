@@ -35,7 +35,10 @@ Board transpose_player_board(const Board& p);
 void simple_search(long long max_depth, long long& cnt, long long& cnt2, std::map<Board, bool>& mp);
 boost::multiprecision::cpp_int count_position_wrapper();
 boost::multiprecision::cpp_int count_position_wrapper2();
-boost::multiprecision::cpp_int count_position_wrapper2_1();
+std::pair<
+    std::array<std::array<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>,
+    std::array<std::array<boost::multiprecision::cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>
+> count_position_wrapper3();
 boost::multiprecision::cpp_int count_position_all();
 
 #endif // FORWARD_H_

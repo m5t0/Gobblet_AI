@@ -5,6 +5,7 @@
 #define CPP_H_
 
 #include <iostream>
+#include <fstream>
 #include <utility>
 #include <optional>
 #include <array>

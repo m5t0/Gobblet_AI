@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "forward.h"
 
+using cpp_int = boost::multiprecision::cpp_int;
+
 TEST(board_id_test, test1) {
     // 0,1,2,3
     // 4,5,6
@@ -274,8 +276,8 @@ TEST(simple_search_test, test1) {
 }
 
 TEST(count_position_wrapper_test, test1) {
-    //auto cnt = count_position_wrapper();
-    //std::cout << "cnt:" << cnt << std::endl;
+    auto cnt = count_position_wrapper();
+    std::cout << "cnt:" << cnt << std::endl;
 }
 
 TEST(count_position_wrapper2_test, test1) {
@@ -283,12 +285,30 @@ TEST(count_position_wrapper2_test, test1) {
     std::cout << "cnt:" << cnt << std::endl;
 }
 
-TEST(count_position_wrapper2_1_test, test1) {
-    //auto cnt = count_position_wrapper2_1();
-    //std::cout << "cnt:" << cnt << std::endl;
+TEST(count_position_wrapper3_test, test1) {
+    auto [cnt, mp_cnt] = count_position_wrapper3();
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> res;
+
+    // mp_cnt‚Í’è””{
+    // cnt‚ª–{–½
+    for (int i = 0; i <= PIECE_PLAYER_COUNT; i++) {
+        for (int j = 0; j <= PIECE_PLAYER_COUNT; j++) {
+            for (auto& [piece_list, value] : cnt[i][j]) {
+                res[piece_list] += mp_cnt[i][j] * value;
+            }
+        }
+    }
+
+    std::ofstream ofst(std::format("../../../../cpp_test/position_count_{}.txt", BOARD_SIZE));
+
+    ofst << "piece list value" << std::endl;
+    for (auto& [piece_list, value] : res) {
+        for (auto& pl : piece_list) ofst << pl << " ";
+        ofst << value << std::endl;
+    }
 }
 
 TEST(count_position_all_test, test1) {
-    //auto cnt = count_position_all();
-    //std::cout << "cnt:" << cnt << std::endl;
+    auto cnt = count_position_all();
+    std::cout << "cnt:" << cnt << std::endl;
 }
