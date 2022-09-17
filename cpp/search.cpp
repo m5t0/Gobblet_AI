@@ -20,12 +20,14 @@ void debug_board(const Board& board, int t) {
 }
 
 // 2次元から1次元へ
+[[nodiscard]]
 int board_id(int x, int y) {
     assert(x >= 0 && x < BOARD_SIZE&& y >= 0 && y < BOARD_SIZE);
     return BOARD_SIZE * x + y;
 }
 
 // 1次元から2次元へ
+[[nodiscard]]
 std::pair<int, int> board_id(int id) {
     assert(id >= 0 && id < BOARD_ID_SIZE);
     return { id / BOARD_SIZE , id % BOARD_SIZE };
@@ -34,6 +36,7 @@ std::pair<int, int> board_id(int id) {
 // boardのマスのフラッグから手番の人の駒だけ取り出す
 // turn=0 => 先手
 // turn=1 => 後手
+[[nodiscard]]
 std::uint32_t take_pieces(std::uint32_t square, int turn) {
     assert(turn == 0 || turn == 1);
     return (square >> (PIECE_TYPE_COUNT * turn)) & ((1 << PIECE_TYPE_COUNT) - 1);
@@ -42,6 +45,7 @@ std::uint32_t take_pieces(std::uint32_t square, int turn) {
 // 手番の人の駒からboardのマスのフラッグに変換する
 // turn=0 => 先手
 // turn=1 => 後手
+[[nodiscard]]
 std::uint32_t convert_to_square(std::uint32_t square, int turn) {
     assert(turn == 0 || turn == 1);
     return square << PIECE_TYPE_COUNT * turn;
@@ -49,6 +53,7 @@ std::uint32_t convert_to_square(std::uint32_t square, int turn) {
 
 // 先手が勝ったらtrue, 負けたらfalse
 // 勝ち負けが決まらない場合nullopt
+[[nodiscard]]
 std::optional<bool> check_status(const Board& board) {
     assert(std::all_of(board.begin(), board.end(), [](int b) { return (take_pieces(b, 0) & take_pieces(b, 1)) == 0; }));
     // 横
@@ -108,6 +113,7 @@ std::optional<bool> check_status(const Board& board) {
 // 特大、大、中、小
 // turn=0 => 先手
 // turn=1 => 後手
+[[nodiscard]]
 std::array<int, PIECE_TYPE_COUNT> count_board_pieces(const Board& board, int turn) {
     assert(turn == 0 || turn == 1);
     assert(std::all_of(board.begin(), board.end(), [](int b) { return (take_pieces(b, 0) & take_pieces(b, 1)) == 0; }));
@@ -127,6 +133,7 @@ std::array<int, PIECE_TYPE_COUNT> count_board_pieces(const Board& board, int tur
 }
 
 // 時計回りに回転させたboard
+[[nodiscard]]
 Board rotate_board(const Board& board) {
     Board b{};
     // 各駒ごとに座標変換
@@ -139,6 +146,7 @@ Board rotate_board(const Board& board) {
 }
 
 // 転置させたboard
+[[nodiscard]]
 Board transpose_board(const Board& board) {
     Board b{};
     // 各駒ごとに座標変換
@@ -151,6 +159,7 @@ Board transpose_board(const Board& board) {
 }
 
 // プレイヤーを反転する
+[[nodiscard]]
 Board transpose_player_board(const Board& board) {
     Board b{};
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
@@ -158,21 +167,6 @@ Board transpose_player_board(const Board& board) {
         b[id] = (board[id] >> PIECE_TYPE_COUNT) | ((board[id] & ((1 << PIECE_TYPE_COUNT) - 1)) << PIECE_TYPE_COUNT);
     }
     return b;
-}
-
-// Boardの比較演算子の実装
-namespace std {
-    template<>
-    class less<Board> {
-    public:
-        constexpr bool operator()(const Board& x, const Board& y) const {
-            for (int id = 0; id < BOARD_ID_SIZE; id++) {
-                if (x[id] == y[id]) continue;
-                return x[id] < y[id];
-            }
-            return false;
-        }
-    };
 }
 
 // メモ化有り深さ優先探索
@@ -272,6 +266,7 @@ struct Comb {
         for (size_t i = 0; i < n; i++) fac[i + 1] = fac[i] * (i + 1);
     }
 
+    [[nodiscard]]
     cpp_int c(int n, int m) const {
         assert(n >= 0 && m >= 0);
         if (n < m) return 0;
@@ -295,22 +290,8 @@ struct Flag {
     Flag(const Flag& f) :mod_cnt(f.mod_cnt), sum(f.sum), row(f.row), diag1(f.diag1), diag2(f.diag2), column(f.column) {}
 };
 
-// 答え保存用のmapの比較演算子
-namespace std {
-    template<>
-    class less<std::array<int, 2 * PIECE_TYPE_COUNT>> {
-    public:
-        constexpr bool operator()(const std::array<int, 2 * PIECE_TYPE_COUNT>& x, const std::array<int, 2 * PIECE_TYPE_COUNT>& y) const {
-            for (int id = 0; id < 2 * PIECE_TYPE_COUNT; id++) {
-                if (x[id] == y[id]) continue;
-                return x[id] < y[id];
-            }
-            return false;
-        }
-    };
-}
-
 // 先手と後手の駒が少なくとも一つ存在するマスの位置と、盤で一番上(鉛直上向き)に置いてある先手と後手の駒の個数を固定したとき、その条件を満たす局面の数を返す関数
+[[nodiscard]]
 cpp_int cnt_dfs(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb) {
     // それぞれの種類の駒に対して全探索が終わった
     if (type == PIECE_TYPE_COUNT) {
@@ -375,6 +356,7 @@ cpp_int cnt_dfs(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_c
 // 1列も揃っていない局面数を調べる関数
 // それぞれのマスに対して一番上(鉛直上向き)にある駒が先手の駒か後手の駒か、若しくは駒が置かれていないかを全探索し、
 // 一番上にある先手の駒の個数と後手の駒の個数を数える
+[[nodiscard]]
 cpp_int count_position(int id, Flag& f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     // 行が揃っていたら枝切り
     if (id != 0 && id % BOARD_SIZE == 0) {
@@ -431,6 +413,7 @@ cpp_int count_position(int id, Flag& f, const Comb& comb, std::array<std::array<
     return res;
 }
 
+[[nodiscard]]
 cpp_int count_position_wrapper() {
     Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
@@ -441,6 +424,7 @@ cpp_int count_position_wrapper() {
 }
 
 // 少なくとも1列は揃っている局面数
+[[nodiscard]]
 cpp_int count_position2(int id, bool ok, Flag& f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     // 少なくとも一つの行が揃っているかどうかをokで管理する
     if (id != 0 && id % BOARD_SIZE == 0) {
@@ -491,6 +475,7 @@ cpp_int count_position2(int id, bool ok, Flag& f, const Comb& comb, std::array<s
     return res;
 }
 
+[[nodiscard]]
 cpp_int count_position_wrapper2() {
     Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
@@ -501,6 +486,7 @@ cpp_int count_position_wrapper2() {
 }
 
 // 上に駒がある駒の数と置き方の組み合わせを計算する
+[[nodiscard]]
 cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt,
     std::array<int, 2 * PIECE_TYPE_COUNT>& top_used_cnt, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
     std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>& mp, cpp_int& top_comb) {
@@ -539,6 +525,7 @@ cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt
 
 // 先手と後手の駒が少なくとも一つ存在するマスの位置と、盤で一番上(鉛直上向き)に置いてある先手と後手の駒の個数を固定したとき、その条件を満たす局面の数を返す関数
 // mapで駒の個数ごとに保存しておく
+[[nodiscard]]
 cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
     std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>& mp) {
     // それぞれの種類の駒に対して全探索が終わった
@@ -659,6 +646,7 @@ void count_position3(int id, Flag& f, const Comb& comb,
     return;
 }
 
+[[nodiscard]]
 std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> count_position_wrapper3() {
     Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
@@ -684,7 +672,64 @@ std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> count_position_wrapper3
     return res;
 }
 
+void transition_dfs(int type, int d, std::array<int, 2 * PIECE_TYPE_COUNT>& idx,
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>& mp) {
+    if (type == 2 * PIECE_TYPE_COUNT) {
+        if (idx[d] < PIECE_EACH_COUNT) {
+            idx[d] += 1;
+            auto tmp = mp[idx];
+            idx[d] -= 1;
+
+            mp[idx] += tmp;
+        }
+
+        return;
+    }
+
+    // 逆順に全探索
+    for (int i = PIECE_EACH_COUNT; i >= 0; i--) {
+        idx[type] = i;
+        transition_dfs(type + 1, d, idx, mp);
+    }
+}
+
+// 遷移可能な局面数を計算する
+// やっていることは累積和をとることだけ。
+// ただし、先手or後手の駒の個数が0個であり得ない局面も含む
+[[nodiscard]]
+std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_phase() {
+    std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+    auto mp = count_position_wrapper3();
+    for (int d = 0; d < 2 * PIECE_TYPE_COUNT; d++) transition_dfs(0, d, idx, mp);
+    return mp;
+}
+
+// 遷移可能な局面数を計算する
+// ただし、先手or後手の駒の個数が0個で、あり得ない局面は含まない
+[[nodiscard]]
+std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_phase2() {
+    std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+    auto mp = count_position_wrapper3();
+
+    // あり得ない局面の局面数を0にする
+    auto check = [&] {
+        for (auto& [piece_list, value] : mp) {
+            auto p1 = std::accumulate(piece_list.begin(), piece_list.begin() + PIECE_TYPE_COUNT, 0);
+            auto p2 = std::accumulate(piece_list.begin() + PIECE_TYPE_COUNT, piece_list.end(), 0);
+
+            if (p1 == 0 && p2 >= 1) value = 0;
+            if (p2 == 0 && p1 >= 2) value = 0;
+        }
+    };
+
+    check();
+    for (int d = 0; d < 2 * PIECE_TYPE_COUNT; d++) transition_dfs(0, d, idx, mp);
+    check();
+    return mp;
+}
+
 // 物理的にあり得る局面数を計算する
+[[nodiscard]]
 cpp_int count_position_all() {
     Comb comb(BOARD_ID_SIZE + 3);
     cpp_int cnt = 1;

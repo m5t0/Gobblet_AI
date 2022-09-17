@@ -23,6 +23,7 @@
 #include <bit>
 #include <numeric>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照します。
 

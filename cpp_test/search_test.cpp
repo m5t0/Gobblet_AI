@@ -2,6 +2,7 @@
 #include "forward.h"
 
 using cpp_int = boost::multiprecision::cpp_int;
+using cpp_dec_float_50 = boost::multiprecision::cpp_dec_float_50;
 
 TEST(board_id_test, test1) {
     // 0,1,2,3
@@ -286,17 +287,87 @@ TEST(count_position_wrapper2_test, test1) {
 }
 
 TEST(count_position_wrapper3_test, test1) {
-    auto res = count_position_wrapper3();
-    
-    cpp_int sum = 0;
-    for (auto& [p, v] : res) sum += v;
-    std::cout << "cnt:" << sum << std::endl;
+    //auto res = count_position_wrapper3();
+    //
+    //cpp_int sum = 0;
+    //for (auto& [p, v] : res) sum += v;
+    //std::cout << "cnt:" << sum << std::endl;
 
-    std::ofstream ofst(std::format("../../../../output/position_count_{}.txt", BOARD_SIZE));
+    //std::ofstream ofst(std::format("../../../../output/position_count_{}.txt", BOARD_SIZE));
 
+    //for (auto& [piece_list, value] : res) {
+    //    for (auto& pl : piece_list) ofst << pl << " ";
+    //    ofst << value << std::endl;
+    //}
+}
+
+TEST(possible_transition_phase_test, test1) {
+    //auto res = possible_transition_phase();
+    //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+
+    //for (auto& [piece_list, value] : res) {
+    //    for (auto& pl : piece_list) std::cout << pl << " ";
+    //    std::cout << value << std::endl;
+    //    if (piece_list[4] != 0) break;
+    //}
+}
+
+TEST(possible_transition_phase2_test, test1) {
+    //auto res = possible_transition_phase2();
+    //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+
+    //for (auto& [piece_list, value] : res) {
+    //    for (auto& pl : piece_list) std::cout << pl << " ";
+    //    std::cout << value << std::endl;
+    //    if (piece_list[4] != 0) break;
+    //}
+}
+
+TEST(possible_transition_phase2_test, test2) {
+    //auto res = possible_transition_phase2();
+    //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+
+    //std::ofstream ofst(std::format("../../../../output/possible_transition_phase_{}.txt", BOARD_SIZE));
+
+    //std::cout << "sum:" << res.begin()->second << std::endl;
+    //for (auto& [piece_list, value] : res) {
+    //    for (auto& pl : piece_list) ofst << pl << " ";
+    //    ofst << value << std::endl;
+    //}
+}
+
+TEST(possible_transition_phase2_test, test3) {
+    //auto res = possible_transition_phase2();
+    //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+
+    //std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.txt", BOARD_SIZE));
+
+    //auto sum = res.begin()->second;
+    //std::cout << "sum:" << sum << std::endl;
+    //for (auto& [piece_list, value] : res) {
+    //    for (auto& pl : piece_list) ofst << pl << " ";
+    //    ofst << cpp_dec_float_50(value) / cpp_dec_float_50(sum) << std::endl;
+    //}
+}
+
+TEST(possible_transition_phase2_test, test4) {
+    auto res = possible_transition_phase2();
+    std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+
+    std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.csv", BOARD_SIZE));
+
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("first_player_{}", i + 1) << ",";
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("second_player_{}", i + 1) << ",";
+    ofst << "proportion" << std::endl;
+
+    auto sum = res.begin()->second;
+    std::cout << "sum:" << sum << std::endl;
     for (auto& [piece_list, value] : res) {
-        for (auto& pl : piece_list) ofst << pl << " ";
-        ofst << value << std::endl;
+        auto res = cpp_dec_float_50(value) / cpp_dec_float_50(sum);
+        if (res < 1e-14) continue;
+
+        for (auto& pl : piece_list) ofst << pl << ",";
+        ofst << res << std::endl;
     }
 }
 
