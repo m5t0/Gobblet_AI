@@ -375,7 +375,7 @@ cpp_int cnt_dfs(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_c
 // 1列も揃っていない局面数を調べる関数
 // それぞれのマスに対して一番上(鉛直上向き)にある駒が先手の駒か後手の駒か、若しくは駒が置かれていないかを全探索し、
 // 一番上にある先手の駒の個数と後手の駒の個数を数える
-cpp_int count_position(int id, Flag f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
+cpp_int count_position(int id, Flag& f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     // 行が揃っていたら枝切り
     if (id != 0 && id % BOARD_SIZE == 0) {
         if (f.row[0] || f.row[1]) return 0;
@@ -441,7 +441,7 @@ cpp_int count_position_wrapper() {
 }
 
 // 少なくとも1列は揃っている局面数
-cpp_int count_position2(int id, bool ok, Flag f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
+cpp_int count_position2(int id, bool ok, Flag& f, const Comb& comb, std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo) {
     // 少なくとも一つの行が揃っているかどうかをokで管理する
     if (id != 0 && id % BOARD_SIZE == 0) {
         ok = ok || f.row[0] || f.row[1];
@@ -595,40 +595,39 @@ cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_
 // 1列も揃っていない局面数を調べる関数
 // それぞれのマスに対して一番上(鉛直上向き)にある駒が先手の駒か後手の駒か、若しくは駒が置かれていないかを全探索し、
 // 一番上にある先手の駒の個数と後手の駒の個数を数える
-cpp_int count_position3(int id, Flag f, const Comb& comb,
+void count_position3(int id, Flag& f, const Comb& comb,
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& memo,
     std::array<std::array<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& cnt,
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>& mp_cnt) {
     // 行が揃っていたら枝切り
     if (id != 0 && id % BOARD_SIZE == 0) {
-        if (f.row[0] || f.row[1]) return 0;
+        if (f.row[0] || f.row[1]) return;
         f.row[0] = f.row[1] = true;
     }
     // 列が揃っていたら枝切り
-    if ((((id - 1) / BOARD_SIZE) == (BOARD_SIZE - 1)) && (f.column[0][(id - 1) % BOARD_SIZE] || f.column[1][(id - 1) % BOARD_SIZE])) return 0;
+    if ((((id - 1) / BOARD_SIZE) == (BOARD_SIZE - 1)) && (f.column[0][(id - 1) % BOARD_SIZE] || f.column[1][(id - 1) % BOARD_SIZE])) return;
     // x+y=BOARD_SIZE方向の斜めが揃っていたら枝切り
-    if ((id - 1) == BOARD_SIZE * (BOARD_SIZE - 1) && (f.diag2[0] || f.diag2[1])) return 0;
+    if ((id - 1) == BOARD_SIZE * (BOARD_SIZE - 1) && (f.diag2[0] || f.diag2[1])) return;
 
     // 盤の端まで来たとき
     if (id == BOARD_ID_SIZE) {
         // x=y方向の斜めが揃っていないか確認
-        if (f.diag1[0] || f.diag1[1]) return 0;
+        if (f.diag1[0] || f.diag1[1]) return;
 
         mp_cnt[f.mod_cnt[0]][f.mod_cnt[1]] += 1;
 
         // 先手と後手の使っていない駒の個数でメモ化
-        if (memo[f.mod_cnt[0]][f.mod_cnt[1]] != -1) return memo[f.mod_cnt[0]][f.mod_cnt[1]];
+        if (memo[f.mod_cnt[0]][f.mod_cnt[1]] != -1) return;
 
         auto used_cnt = std::array<int, 2 * PIECE_TYPE_COUNT>();
         std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> mp;
         memo[f.mod_cnt[0]][f.mod_cnt[1]] = cnt_dfs2(0, f, used_cnt, comb, mp);
         cnt[f.mod_cnt[0]][f.mod_cnt[1]] = std::move(mp);
 
-        return memo[f.mod_cnt[0]][f.mod_cnt[1]];
+        return;
     }
 
     Flag b{ f };
-    cpp_int res = 0;
     auto id2 = board_id(id);
 
     // 先手の駒も後手の駒もマスに置かない
@@ -639,8 +638,8 @@ cpp_int count_position3(int id, Flag f, const Comb& comb,
             if (id2.first == id2.second) f.diag1[p] = false;
             if (id2.first + id2.second == BOARD_SIZE - 1) f.diag2[p] = false;
         }
-        res += count_position3(id + 1, f, comb, memo, cnt, mp_cnt);
 
+        count_position3(id + 1, f, comb, memo, cnt, mp_cnt);
         f = b;
     }
 
@@ -652,12 +651,12 @@ cpp_int count_position3(int id, Flag f, const Comb& comb,
         f.column[p][id2.second] = false;
         if (id2.first == id2.second) f.diag1[p] = false;
         if (id2.first + id2.second == BOARD_SIZE - 1) f.diag2[p] = false;
-        res += count_position3(id + 1, f, comb, memo, cnt, mp_cnt);
+        count_position3(id + 1, f, comb, memo, cnt, mp_cnt);
         f = b;
     }
 
     //if (id < 5) std::cout << id << " " << res << std::endl;
-    return res;
+    return;
 }
 
 std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> count_position_wrapper3() {
