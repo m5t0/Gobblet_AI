@@ -280,24 +280,19 @@ struct Comb {
 };
 
 struct Flag {
-    // それぞれの駒が使える個数
-    std::array<int, PIECE_TYPE_COUNT * 2> cnt;
     // 先手と後手の残り使える駒の個数 先手と後手がそれぞれ使うことができる駒の数
     std::array<int, 2> mod_cnt, sum;
     // 行判定, x = y斜め判定, x + y = BOARD_SIZE - 1斜め判定
     std::array<bool, 2> row, diag1, diag2;
     // 列判定
     std::array<std::array<bool, BOARD_SIZE>, 2> column;
-    Flag(const std::array<int, PIECE_TYPE_COUNT * 2>& c) :cnt(c), mod_cnt(), row({ true, true }), diag1({ true,true }), diag2({ true, true }), column() {
+    Flag() :mod_cnt({ PIECE_PLAYER_COUNT ,PIECE_PLAYER_COUNT }), sum({ PIECE_PLAYER_COUNT ,PIECE_PLAYER_COUNT }),
+        row({ true, true }), diag1({ true,true }), diag2({ true, true }), column() {
         std::fill(column[0].begin(), column[0].end(), true);
         std::fill(column[1].begin(), column[1].end(), true);
-
-        for (int p = 0; p < 2; p++) {
-            mod_cnt[p] = sum[p] = std::accumulate(cnt.begin() + PIECE_TYPE_COUNT * p, cnt.begin() + PIECE_TYPE_COUNT * (p + 1), 0);
-        }
     }
 
-    Flag(const Flag& f) :cnt(f.cnt), mod_cnt(f.mod_cnt), sum(f.sum), row(f.row), diag1(f.diag1), diag2(f.diag2), column(f.column) {}
+    Flag(const Flag& f) :mod_cnt(f.mod_cnt), sum(f.sum), row(f.row), diag1(f.diag1), diag2(f.diag2), column(f.column) {}
 };
 
 // 答え保存用のmapの比較演算子
@@ -345,8 +340,8 @@ cpp_int cnt_dfs(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_c
         // 上に駒がある駒の置き方の組み合わせを計算する
         for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
             cpp_int tmp = 1;
-            for (int i = 0; i <= std::min(max_cnt[t], f.cnt[t] - used_cnt[t]); i++) {
-                for (int j = 0; j <= std::min(max_cnt[t] - i, f.cnt[t + PIECE_TYPE_COUNT] - used_cnt[t + PIECE_TYPE_COUNT]); j++) {
+            for (int i = 0; i <= std::min(max_cnt[t], PIECE_EACH_COUNT - used_cnt[t]); i++) {
+                for (int j = 0; j <= std::min(max_cnt[t] - i, PIECE_EACH_COUNT - used_cnt[t + PIECE_TYPE_COUNT]); j++) {
                     if (i == 0 && j == 0) continue;
                     tmp += comb.c(max_cnt[t], i) * comb.c(max_cnt[t] - i, j);
                 }
@@ -364,9 +359,9 @@ cpp_int cnt_dfs(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_c
 
     cpp_int res = 0;
     // 種類typeの駒を何個使うのかを全探索する
-    for (int i = 0; i <= std::min(f.cnt[type], f.sum[0] - f.mod_cnt[0] - s1); i++) {
+    for (int i = 0; i <= std::min(PIECE_EACH_COUNT, f.sum[0] - f.mod_cnt[0] - s1); i++) {
         used_cnt[type] += i;
-        for (int j = 0; j <= std::min(f.cnt[type + PIECE_TYPE_COUNT], f.sum[1] - f.mod_cnt[1] - s2); j++) {
+        for (int j = 0; j <= std::min(PIECE_EACH_COUNT, f.sum[1] - f.mod_cnt[1] - s2); j++) {
             used_cnt[type + PIECE_TYPE_COUNT] += j;
             res += cnt_dfs(type + 1, f, used_cnt, comb);
             used_cnt[type + PIECE_TYPE_COUNT] -= j;
@@ -437,10 +432,7 @@ cpp_int count_position(int id, Flag f, const Comb& comb, std::array<std::array<c
 }
 
 cpp_int count_position_wrapper() {
-    std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
-    std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
-
-    Flag f(cnt);
+    Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
     for (auto& m : memo) std::fill(m.begin(), m.end(), cpp_int(-1));
@@ -500,10 +492,7 @@ cpp_int count_position2(int id, bool ok, Flag f, const Comb& comb, std::array<st
 }
 
 cpp_int count_position_wrapper2() {
-    std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
-    std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
-
-    Flag f(cnt);
+    Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
     for (auto& m : memo) std::fill(m.begin(), m.end(), cpp_int(-1));
@@ -535,8 +524,8 @@ cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt
     cpp_int res = 0;
 
     // 上に駒がある駒の数を種類ごとに全探索する
-    for (int i = 0; i <= std::min(max_cnt[type], f.cnt[type] - top_used_cnt[type]); i++) {
-        for (int j = 0; j <= std::min(max_cnt[type] - i, f.cnt[type + PIECE_TYPE_COUNT] - top_used_cnt[type + PIECE_TYPE_COUNT]); j++) {
+    for (int i = 0; i <= std::min(max_cnt[type], PIECE_EACH_COUNT - top_used_cnt[type]); i++) {
+        for (int j = 0; j <= std::min(max_cnt[type] - i, PIECE_EACH_COUNT - top_used_cnt[type + PIECE_TYPE_COUNT]); j++) {
             used_cnt[type] += i;
             used_cnt[type + PIECE_TYPE_COUNT] += j;
             res += cnt_dfs2_2(type + 1, f, max_cnt, top_used_cnt, used_cnt, comb, mp, top_comb);
@@ -590,9 +579,9 @@ cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_
 
     cpp_int res = 0;
     // 種類typeの駒を何個使うのかを全探索する
-    for (int i = 0; i <= std::min(f.cnt[type], f.sum[0] - f.mod_cnt[0] - s1); i++) {
+    for (int i = 0; i <= std::min(PIECE_EACH_COUNT, f.sum[0] - f.mod_cnt[0] - s1); i++) {
         used_cnt[type] += i;
-        for (int j = 0; j <= std::min(f.cnt[type + PIECE_TYPE_COUNT], f.sum[1] - f.mod_cnt[1] - s2); j++) {
+        for (int j = 0; j <= std::min(PIECE_EACH_COUNT, f.sum[1] - f.mod_cnt[1] - s2); j++) {
             used_cnt[type + PIECE_TYPE_COUNT] += j;
             res += cnt_dfs2(type + 1, f, used_cnt, comb, mp);
             used_cnt[type + PIECE_TYPE_COUNT] -= j;
@@ -672,25 +661,22 @@ cpp_int count_position3(int id, Flag f, const Comb& comb,
 }
 
 std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> count_position_wrapper3() {
-    std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
-    std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
-
-    Flag f(cnt);
+    Flag f;
     Comb comb(BOARD_ID_SIZE + 3);
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> memo;
     for (auto& m : memo) std::fill(m.begin(), m.end(), cpp_int(-1));
-    std::array<std::array<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> cnt2{};
+    std::array<std::array<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> cnt{};
     std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1> mp_cnt{};
 
-    count_position3(0, f, comb, memo, cnt2, mp_cnt);
+    count_position3(0, f, comb, memo, cnt, mp_cnt);
 
     std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> res;
 
     // mp_cntは定数倍
-    // cnt2が本命
+    // cntが本命
     for (int i = 0; i <= PIECE_PLAYER_COUNT; i++) {
         for (int j = 0; j <= PIECE_PLAYER_COUNT; j++) {
-            for (auto& [piece_list, value] : cnt2[i][j]) {
+            for (auto& [piece_list, value] : cnt[i][j]) {
                 res[piece_list] += mp_cnt[i][j] * value;
             }
         }
