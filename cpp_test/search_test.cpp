@@ -313,7 +313,7 @@ TEST(possible_transition_phase_test, test1) {
 }
 
 TEST(possible_transition_phase2_test, test1) {
-    //auto res = possible_transition_phase2();
+    //auto [res, res2] = possible_transition_phase2();
     //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
 
     //for (auto& [piece_list, value] : res) {
@@ -324,9 +324,8 @@ TEST(possible_transition_phase2_test, test1) {
 }
 
 TEST(possible_transition_phase2_test, test2) {
-    //auto res = possible_transition_phase2();
+    //auto [res, res2] = possible_transition_phase2();
     //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
-
     //std::ofstream ofst(std::format("../../../../output/possible_transition_phase_{}.txt", BOARD_SIZE));
 
     //std::cout << "sum:" << res.begin()->second << std::endl;
@@ -337,28 +336,30 @@ TEST(possible_transition_phase2_test, test2) {
 }
 
 TEST(possible_transition_phase2_test, test3) {
-    //auto res = possible_transition_phase2();
+    //auto [res, res2] = possible_transition_phase2();
     //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
-
     //std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.txt", BOARD_SIZE));
 
     //auto sum = res.begin()->second;
     //std::cout << "sum:" << sum << std::endl;
     //for (auto& [piece_list, value] : res) {
+    //    auto res = cpp_dec_float_50(value) / cpp_dec_float_50(sum);
+    //    if (res < 1e-14) continue;
+
     //    for (auto& pl : piece_list) ofst << pl << " ";
-    //    ofst << cpp_dec_float_50(value) / cpp_dec_float_50(sum) << std::endl;
+    //    ofst << res << " " << res2[piece_list] << std::endl;
     //}
 }
 
 TEST(possible_transition_phase2_test, test4) {
-    auto res = possible_transition_phase2();
+    auto [res, res2] = possible_transition_phase2();
     std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
 
     std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.csv", BOARD_SIZE));
 
     for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("first_player_{}", i + 1) << ",";
     for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("second_player_{}", i + 1) << ",";
-    ofst << "proportion" << std::endl;
+    ofst << "proportion,count" << std::endl;
 
     auto sum = res.begin()->second;
     std::cout << "sum:" << sum << std::endl;
@@ -367,7 +368,7 @@ TEST(possible_transition_phase2_test, test4) {
         if (res < 1e-14) continue;
 
         for (auto& pl : piece_list) ofst << pl << ",";
-        ofst << res << std::endl;
+        ofst << res << "," << res2[piece_list] << std::endl;
     }
 }
 

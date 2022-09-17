@@ -707,12 +707,13 @@ std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_pha
 // 遷移可能な局面数を計算する
 // ただし、先手or後手の駒の個数が0個で、あり得ない局面は含まない
 [[nodiscard]]
-std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_phase2() {
+std::pair<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>,
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>> possible_transition_phase2() {
     std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
     auto mp = count_position_wrapper3();
 
     // あり得ない局面の局面数を0にする
-    auto check = [&] {
+    auto check = [](auto& mp) {
         for (auto& [piece_list, value] : mp) {
             auto p1 = std::accumulate(piece_list.begin(), piece_list.begin() + PIECE_TYPE_COUNT, 0);
             auto p2 = std::accumulate(piece_list.begin() + PIECE_TYPE_COUNT, piece_list.end(), 0);
@@ -722,10 +723,12 @@ std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_pha
         }
     };
 
-    check();
+    check(mp);
+    auto mp2 = mp;
     for (int d = 0; d < 2 * PIECE_TYPE_COUNT; d++) transition_dfs(0, d, idx, mp);
-    check();
-    return mp;
+    check(mp);
+    // 個数の和、個数
+    return { mp,mp2 };
 }
 
 // 物理的にあり得る局面数を計算する

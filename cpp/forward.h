@@ -37,7 +37,8 @@ boost::multiprecision::cpp_int count_position_wrapper();
 boost::multiprecision::cpp_int count_position_wrapper2();
 std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int> count_position_wrapper3();
 std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int> possible_transition_phase();
-std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int> possible_transition_phase2();
+std::pair<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>,
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>> possible_transition_phase2();
 boost::multiprecision::cpp_int count_position_all();
 
 #endif // FORWARD_H_
