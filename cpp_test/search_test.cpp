@@ -286,19 +286,8 @@ TEST(count_position_wrapper2_test, test1) {
 }
 
 TEST(count_position_wrapper3_test, test1) {
-    auto [cnt, mp_cnt] = count_position_wrapper3();
-    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> res;
-
-    // mp_cnt‚Í’è””{
-    // cnt‚ª–{–½
-    for (int i = 0; i <= PIECE_PLAYER_COUNT; i++) {
-        for (int j = 0; j <= PIECE_PLAYER_COUNT; j++) {
-            for (auto& [piece_list, value] : cnt[i][j]) {
-                res[piece_list] += mp_cnt[i][j] * value;
-            }
-        }
-    }
-
+    auto res = count_position_wrapper3();
+    
     cpp_int sum = 0;
     for (auto& [p, v] : res) sum += v;
     std::cout << "cnt:" << sum << std::endl;

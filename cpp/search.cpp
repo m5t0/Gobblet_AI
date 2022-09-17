@@ -515,13 +515,16 @@ cpp_int count_position_wrapper2() {
 cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt,
     std::array<int, 2 * PIECE_TYPE_COUNT>& top_used_cnt, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
     std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>& mp, cpp_int& top_comb) {
+    // 全探索終了
     if (type == PIECE_TYPE_COUNT) {
         std::array<int, 2 * PIECE_TYPE_COUNT> piece_cnt{};
+        // それぞれの駒ごとに何個使っているかを計算する
         for (int t = 0; t < 2 * PIECE_TYPE_COUNT; t++) {
             piece_cnt[t] = top_used_cnt[t] + used_cnt[t];
         }
 
         cpp_int res = 1;
+        // 局面数を計算する
         for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
             res *= comb.c(max_cnt[t], used_cnt[t]) * comb.c(max_cnt[t] - used_cnt[t], used_cnt[t + PIECE_TYPE_COUNT]);
         }
@@ -530,6 +533,8 @@ cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt
     }
 
     cpp_int res = 0;
+
+    // 上に駒がある駒の数を種類ごとに全探索する
     for (int i = 0; i <= std::min(max_cnt[type], f.cnt[type] - top_used_cnt[type]); i++) {
         for (int j = 0; j <= std::min(max_cnt[type] - i, f.cnt[type + PIECE_TYPE_COUNT] - top_used_cnt[type + PIECE_TYPE_COUNT]); j++) {
             used_cnt[type] += i;
@@ -666,10 +671,7 @@ cpp_int count_position3(int id, Flag f, const Comb& comb,
     return res;
 }
 
-std::pair<
-    std::array<std::array<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>,
-    std::array<std::array<cpp_int, PIECE_PLAYER_COUNT + 1>, PIECE_PLAYER_COUNT + 1>
-> count_position_wrapper3() {
+std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> count_position_wrapper3() {
     std::array<int, PIECE_TYPE_COUNT * 2> cnt{};
     std::fill(cnt.begin(), cnt.end(), PIECE_EACH_COUNT);
 
@@ -682,7 +684,19 @@ std::pair<
 
     count_position3(0, f, comb, memo, cnt2, mp_cnt);
 
-    return { cnt2, mp_cnt };
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> res;
+
+    // mp_cntは定数倍
+    // cnt2が本命
+    for (int i = 0; i <= PIECE_PLAYER_COUNT; i++) {
+        for (int j = 0; j <= PIECE_PLAYER_COUNT; j++) {
+            for (auto& [piece_list, value] : cnt2[i][j]) {
+                res[piece_list] += mp_cnt[i][j] * value;
+            }
+        }
+    }
+
+    return res;
 }
 
 // 物理的にあり得る局面数を計算する
