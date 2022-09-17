@@ -511,6 +511,38 @@ cpp_int count_position_wrapper2() {
     return count_position2(0, false, f, comb, memo);
 }
 
+// 上に駒がある駒の数と置き方の組み合わせを計算する
+cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt,
+    std::array<int, 2 * PIECE_TYPE_COUNT>& top_used_cnt, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
+    std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int>& mp, cpp_int& top_comb) {
+    if (type == PIECE_TYPE_COUNT) {
+        std::array<int, 2 * PIECE_TYPE_COUNT> piece_cnt{};
+        for (int t = 0; t < 2 * PIECE_TYPE_COUNT; t++) {
+            piece_cnt[t] = top_used_cnt[t] + used_cnt[t];
+        }
+
+        cpp_int res = 1;
+        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
+            res *= comb.c(max_cnt[t], used_cnt[t]) * comb.c(max_cnt[t] - used_cnt[t], used_cnt[t + PIECE_TYPE_COUNT]);
+        }
+        mp[piece_cnt] += top_comb * res;
+        return res;
+    }
+
+    cpp_int res = 0;
+    for (int i = 0; i <= std::min(max_cnt[type], f.cnt[type] - top_used_cnt[type]); i++) {
+        for (int j = 0; j <= std::min(max_cnt[type] - i, f.cnt[type + PIECE_TYPE_COUNT] - top_used_cnt[type + PIECE_TYPE_COUNT]); j++) {
+            used_cnt[type] += i;
+            used_cnt[type + PIECE_TYPE_COUNT] += j;
+            res += cnt_dfs2_2(type + 1, f, max_cnt, top_used_cnt, used_cnt, comb, mp, top_comb);
+            used_cnt[type] -= i;
+            used_cnt[type + PIECE_TYPE_COUNT] -= j;
+        }
+    }
+
+    return res;
+}
+
 // 先手と後手の駒が少なくとも一つ存在するマスの位置と、盤で一番上(鉛直上向き)に置いてある先手と後手の駒の個数を固定したとき、その条件を満たす局面の数を返す関数
 // mapで駒の個数ごとに保存しておく
 cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
@@ -541,19 +573,8 @@ cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_
         }
 
         // 上に駒がある駒の置き方の組み合わせを計算する
-        for (int t = 0; t < PIECE_TYPE_COUNT; t++) {
-            cpp_int tmp = 1;
-            for (int i = 0; i <= std::min(max_cnt[t], f.cnt[t] - used_cnt[t]); i++) {
-                for (int j = 0; j <= std::min(max_cnt[t] - i, f.cnt[t + PIECE_TYPE_COUNT] - used_cnt[t + PIECE_TYPE_COUNT]); j++) {
-                    if (i == 0 && j == 0) continue;
-                    tmp += comb.c(max_cnt[t], i) * comb.c(max_cnt[t] - i, j);
-                }
-            }
-
-            res *= tmp;
-        }
-
-        mp[used_cnt] += res;
+        std::array<int, 2 * PIECE_TYPE_COUNT> used_cnt2{};
+        res *= cnt_dfs2_2(0, f, max_cnt, used_cnt, used_cnt2, comb, mp, res);
 
         return res;
     }

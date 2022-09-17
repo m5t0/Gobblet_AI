@@ -268,21 +268,21 @@ TEST(transpose_player_board_test, test1) {
 }
 
 TEST(simple_search_test, test1) {
-    constexpr int max_depth = 8;
-    long long cnt = 0, cnt2 = 0;
-    std::map<Board, bool> mp;
+    //constexpr int max_depth = 8;
+    //long long cnt = 0, cnt2 = 0;
+    //std::map<Board, bool> mp;
     //simple_search(max_depth, cnt, cnt2, mp);
-    std::cout << "depth:" << max_depth << ", cnt:" << cnt << ", cnt2:" << cnt2 << ", mp size:" << mp.size() << ", mp maxsize:" << mp.max_size() << std::endl;
+    //std::cout << "depth:" << max_depth << ", cnt:" << cnt << ", cnt2:" << cnt2 << ", mp size:" << mp.size() << ", mp maxsize:" << mp.max_size() << std::endl;
 }
 
 TEST(count_position_wrapper_test, test1) {
-    auto cnt = count_position_wrapper();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_wrapper();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
 
 TEST(count_position_wrapper2_test, test1) {
-    auto cnt = count_position_wrapper2();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_wrapper2();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
 
 TEST(count_position_wrapper3_test, test1) {
@@ -299,9 +299,12 @@ TEST(count_position_wrapper3_test, test1) {
         }
     }
 
-    std::ofstream ofst(std::format("../../../../cpp_test/position_count_{}.txt", BOARD_SIZE));
+    cpp_int sum = 0;
+    for (auto& [p, v] : res) sum += v;
+    std::cout << "cnt:" << sum << std::endl;
 
-    ofst << "piece list value" << std::endl;
+    std::ofstream ofst(std::format("../../../../output/position_count_{}.txt", BOARD_SIZE));
+
     for (auto& [piece_list, value] : res) {
         for (auto& pl : piece_list) ofst << pl << " ";
         ofst << value << std::endl;
@@ -309,6 +312,6 @@ TEST(count_position_wrapper3_test, test1) {
 }
 
 TEST(count_position_all_test, test1) {
-    auto cnt = count_position_all();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_all();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
