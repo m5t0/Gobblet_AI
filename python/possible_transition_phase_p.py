@@ -72,3 +72,11 @@ if __name__ == "__main__":
     plt.ylabel("quantity")
     plt.yscale("log")
     plt.show()
+
+    #print("corr:",pd.Series(df[0]).corr(pd.Series(df[1])))
+    plt.scatter(df[0], df[1])
+    plt.title("possible_transition_phase_p_plot_4")
+    plt.xlabel("proportion")
+    plt.ylabel("count")
+    plt.yscale("log")
+    plt.show()
