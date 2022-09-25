@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import math
 
-# https://oku.edu.mie-u.ac.jp/~okumura/python/hist-median.html ���p
+# https://oku.edu.mie-u.ac.jp/~okumura/python/hist-median.html 引用
 def hquantile(hist, q=0.5):
     n = sum(hist)
     t = n * q
@@ -32,11 +32,10 @@ def f(p, hist):
     else:
         return (hist[math.floor(p)] + hist[math.ceil(p)]) / 2
 
-
-if __name__ == "__main__":
+def main(s):
     parent_parent = Path(__file__).resolve().parent.parent
     df = pd.read_csv(
-        parent_parent.joinpath(Path("output/possible_transition_phase_p_4.csv")),
+        parent_parent.joinpath(Path(f"output/possible_transition_phase_p_{s}.csv")),
         header=0,
     )
 
@@ -53,30 +52,35 @@ if __name__ == "__main__":
         sum([(df[0][i] - mean) ** 2 * df[1][i] / cnt for i in range(len(df[0]))])
     )
 
-    p1 = hquantile(df[1], 0.25) - 1
-    p2 = hquantile(df[1], 0.5) - 1
-    p3 = hquantile(df[1], 0.75) - 1
+    #p1 = hquantile(df[1], 0.25) - 1
+    #p2 = hquantile(df[1], 0.5) - 1
+    #p3 = hquantile(df[1], 0.75) - 1
 
     print("count", str(cnt).rjust(32))
     print("mean", str(mean).rjust(33))
     print("std", str(std).rjust(34))
     print("min", str(mn).rjust(34))
-    print("25%", str(f(p1,df[0])).rjust(34))
-    print("50%", str(f(p2,df[0])).rjust(34))
-    print("75%", str(f(p3,df[0])).rjust(34))
+    #print("25%", str(f(p1,df[0])).rjust(34))
+    #print("50%", str(f(p2,df[0])).rjust(34))
+    #print("75%", str(f(p3,df[0])).rjust(34))
     print("max", str(mx).rjust(34))
 
     plt.hist(df[0], bins=50, weights=df[1])
-    plt.title("possible_transition_phase_p_4")
-    plt.xlabel("proportion")
-    plt.ylabel("quantity")
+    #plt.title("possible_transition_phase_p_4")
+    plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
+    plt.ylabel("開始局面数", fontname="Meiryo")
     plt.yscale("log")
+    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_log_{s}.png")))
     plt.show()
 
     #print("corr:",pd.Series(df[0]).corr(pd.Series(df[1])))
     plt.scatter(df[0], df[1])
-    plt.title("possible_transition_phase_p_plot_4")
-    plt.xlabel("proportion")
-    plt.ylabel("count")
+    #plt.title("possible_transition_phase_p_plot_4")
+    plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
+    plt.ylabel("開始局面数", fontname="Meiryo")
     plt.yscale("log")
+    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_plot_log_{s}.png")))
     plt.show()
+
+if __name__ == "__main__":
+    main("5_3_2")

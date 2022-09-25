@@ -282,8 +282,8 @@ TEST(count_position_wrapper_test, test1) {
 }
 
 TEST(count_position_wrapper2_test, test1) {
-    auto cnt = count_position_wrapper2();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_wrapper2();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
 
 TEST(count_position_wrapper3_test, test1) {
@@ -365,7 +365,7 @@ TEST(possible_transition_phase2_test, test4) {
     //std::cout << "sum:" << sum << std::endl;
     //for (auto& [piece_list, value] : res) {
     //    auto res = cpp_dec_float_50(value) / cpp_dec_float_50(sum);
-    //    if (res < 1e-14) continue;
+    //    if (res < 1e-30) continue;
 
     //    for (auto& pl : piece_list) ofst << pl << ",";
     //    ofst << res << "," << res2[piece_list] << std::endl;
@@ -373,6 +373,6 @@ TEST(possible_transition_phase2_test, test4) {
 }
 
 TEST(count_position_all_test, test1) {
-    auto cnt = count_position_all();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_all();
+    //std::cout << "cnt:" << cnt << std::endl;
 }

@@ -5,7 +5,7 @@
 // 盤を2次元ではなくて1次元で管理する
 // それぞれのマスについて駒があるかどうかを2進数のフラグで管理する
 // Xが縦方向, Yが横方向, 原点は左上
-constexpr inline int BOARD_SIZE = 4;
+constexpr inline int BOARD_SIZE = 5;
 constexpr inline int BOARD_ID_SIZE = BOARD_SIZE * BOARD_SIZE;
 
 // 駒の種類数
