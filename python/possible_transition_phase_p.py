@@ -7,30 +7,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import math
 
-# https://oku.edu.mie-u.ac.jp/~okumura/python/hist-median.html 引用
-def hquantile(hist, q=0.5):
-    n = sum(hist)
-    t = n * q
-    i = 0
-    s = hist[i]
-    while s < t:
-        i += 1
-        s += hist[i]
-    if s == t and hist[i + 1] == 0:
-        j = i + 2
-        while hist[j] == 0:
-            j += 1
-        return (i + j) / 2
-    return i + (t - s) / hist[i] + 0.5
-
-
-def f(p, hist):
-    if p - math.floor(p) < 0.5:
-        return hist[math.floor(p)]
-    elif p - math.floor(p) > 0.5:
-        return hist[math.ceil(p)]
-    else:
-        return (hist[math.floor(p)] + hist[math.ceil(p)]) / 2
 
 def main(s):
     parent_parent = Path(__file__).resolve().parent.parent
@@ -68,19 +44,20 @@ def main(s):
     plt.hist(df[0], bins=50, weights=df[1])
     #plt.title("possible_transition_phase_p_4")
     plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
-    plt.ylabel("開始局面数", fontname="Meiryo")
-    plt.yscale("log")
-    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_log_{s}.png")))
+    plt.ylabel("局面数", fontname="Meiryo")
+    #plt.yscale("log")
+    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_{s}.png")))
     plt.show()
 
     #print("corr:",pd.Series(df[0]).corr(pd.Series(df[1])))
     plt.scatter(df[0], df[1])
     #plt.title("possible_transition_phase_p_plot_4")
     plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
-    plt.ylabel("開始局面数", fontname="Meiryo")
-    plt.yscale("log")
-    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_plot_log_{s}.png")))
+    plt.ylabel("局面数", fontname="Meiryo")
+    #plt.yscale("log")
+    plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_plot_{s}.png")))
     plt.show()
 
 if __name__ == "__main__":
-    main("5_3_2")
+    main("4")
+    #main("5_3_2")
