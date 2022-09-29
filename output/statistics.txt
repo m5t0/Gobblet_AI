@@ -1,4 +1,4 @@
-possible_transition_phase_p_4.csv proportion
+possible_transition_phase_p_4 proportion
 
 count    65030.000000
 mean         0.550060
@@ -9,29 +9,55 @@ min          0.102228
 75%          0.673171
 max          1.000000
 
-possible_transition_phase_p_4.csv count/max(count)
+possible_transition_phase_p_4 count/max(count)
 
-count  6.503000e+04
-mean   1.504238e-04
-std    5.361077e-03
-min    2.414116e-21
-25%    2.082308e-11
-50%    1.605840e-09
-75%    1.170369e-07
-max    1.000000e+00
+count    6.503000e+04
+mean     1.504238e-04
+std      5.361077e-03
+min      2.414116e-21
+25%      2.082308e-11
+50%      1.605840e-09
+75%      1.170369e-07
+max      1.000000e+00
+
+possible_transition_phase_p_5_3_2 proportion
+
+count    680.000000
+mean       0.827860
+std        0.083309
+min        0.581054
+25%        0.759670
+50%        0.828755
+75%        0.903832
+max        1.000000
+
+possible_transition_phase_p_5_3_2 count/max(count)
+
+count    6.800000e+02
+mean     2.530900e-03
+std      3.925650e-02
+min      2.289571e-15
+25%      5.151535e-09
+50%      1.184853e-07
+75%      5.687295e-06
+max      1.000000e+00
 
 第一四分位数、第二四分位数、第三四分位数は目安
 
-possible_transition_phase_p_4.csv
+possible_transition_phase_p_4
 
-count           4052027033345402485449
-mean               0.17679453324565714
-std                0.05869820133549185
-min                           0.102228
-max                                1.0
+count                     4052027033345402485449
+mean                         0.17679453324565714
+std                          0.05869820133549185
+min                                     0.102228
+max                                          1.0
+corr                         -0.0599182754777416
 
-count                  751674267937636
-mean                0.6090178852008293
-std                0.03781453548127051
-min                           0.581054
-max                                1.0
+possible_transition_phase_p_5_3_2
+
+count                            751674267937636
+mean                          0.6090178852008293
+std                          0.03781453548127051
+min                                     0.581054
+max                                          1.0
+corr                         -0.1696065772943523

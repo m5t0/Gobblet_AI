@@ -10,36 +10,29 @@ import matplotlib.pyplot as plt
 import math
 
 
-if __name__ == "__main__":
+def main(s):
     parent_parent = Path(__file__).resolve().parent.parent
     data = pd.read_csv(
-        parent_parent.joinpath(Path("output/possible_transition_phase_p_4.csv")),
+        parent_parent.joinpath(Path(f"output/possible_transition_phase_p_{s}.csv")),
         header=0,
     )
 
     df = data["proportion"]
 
+    print(f"possible_transition_phase_p_{s} proportion")
+    print()
     print(df.describe())
 
-    df.hist(bins=100)
-    plt.title("possible_transition_phase_proportion_4")
-    plt.xlabel("proportion")
-    plt.ylabel("piece pair quantity")
-    # plt.yscale("log")
-    plt.show()
-
-    df = data["count"].tolist()
+    df = data["count"].values
     df = list(map(int, df))
     mx = max(df)
-    df = pd.DataFrame([d / mx for d in df],columns=["count"])
+    df = pd.Series(np.array([i / mx for i in df], dtype=np.float64), name="count")
 
+    print(f"possible_transition_phase_p_{s} count/max(count)")
+    print()
     print(df.describe())
 
-    df.hist(bins=100)
-    plt.title("possible_transition_phase_count_4")
-    plt.xlabel("count proportion")
-    plt.ylabel("piece pair quantity")
-    plt.xlim((1e-20,10.))
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.show()
+
+if __name__ == "__main__":
+    main("4")
+    main("5_3_2")
