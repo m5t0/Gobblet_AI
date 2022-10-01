@@ -21,12 +21,16 @@ def main(s, f):
     df = data["count"].values
     df = list(map(int, df))
     mx = sum(df)
-    df2 = df_p - pd.Series(
-        np.array([(i / mx) for i in df], dtype=np.float64),
-        name="directional_proportion",
-    )
+    df2 = (
+        df_p
+        - pd.Series(
+            np.array([(i / mx) for i in df], dtype=np.float64),
+        )
+    ).rename("directional_proportion")
 
-    pd.DataFrame({"proportion": df_p, "directional_proportion": df2}).to_csv(
+    data = pd.merge(data, df2, left_index=True, right_index=True, how="left")
+
+    data.to_csv(
         parent_parent.joinpath(
             Path(f"output/possible_directional_transition_phase_{s}.csv")
         ),

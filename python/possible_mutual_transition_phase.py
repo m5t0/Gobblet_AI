@@ -20,7 +20,15 @@ def main(s,f):
     df = data["count"].values
     df = list(map(int, df))
     mx = sum(df)
-    df2 = pd.Series(np.array([(i / mx) for i in df], dtype=np.float64), name="count")
+    df2 = pd.Series(np.array([(i / mx) for i in df], dtype=np.float64), name="mutual_proportion")
+
+    data = pd.merge(data, df2, left_index=True, right_index=True, how="left")
+    data.to_csv(
+        parent_parent.joinpath(
+            Path(f"output/possible_mutual_transition_phase_{s}.csv")
+        ),
+        index=False,
+    )
 
     print(f"possible_transition_phase_p_{s} count/sum(count)")
     print()
