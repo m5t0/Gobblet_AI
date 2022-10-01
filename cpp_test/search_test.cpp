@@ -274,8 +274,8 @@ TEST(simple_search_test, test1) {
 }
 
 TEST(count_position_wrapper_test, test1) {
-    auto cnt = count_position_wrapper();
-    std::cout << "cnt:" << cnt << std::endl;
+    //auto cnt = count_position_wrapper();
+    //std::cout << "cnt:" << cnt << std::endl;
 }
 
 TEST(count_position_wrapper2_test, test1) {
@@ -349,24 +349,24 @@ TEST(possible_transition_phase2_test, test3) {
 }
 
 TEST(possible_transition_phase2_test, test4) {
-    //auto [res, res2] = possible_transition_phase2();
-    //std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
+    auto [res, res2] = possible_transition_phase2();
+    std::array<int, 2 * PIECE_TYPE_COUNT> idx{};
 
-    //std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.csv", BOARD_SIZE));
+    std::ofstream ofst(std::format("../../../../output/possible_transition_phase_p_{}.csv", BOARD_SIZE));
 
-    //for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("first_player_{}", i + 1) << ",";
-    //for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("second_player_{}", i + 1) << ",";
-    //ofst << "proportion,count" << std::endl;
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("first_player_{}", i + 1) << ",";
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("second_player_{}", i + 1) << ",";
+    ofst << "proportion,count" << std::endl;
 
-    //auto sum = res.begin()->second;
-    //std::cout << "sum:" << sum << std::endl;
-    //for (auto& [piece_list, value] : res) {
-    //    auto res = cpp_dec_float_50(value) / cpp_dec_float_50(sum);
-    //    if (res < 1e-30) continue;
+    auto sum = res.begin()->second;
+    std::cout << "sum:" << sum << std::endl;
+    for (auto& [piece_list, value] : res) {
+        auto res = cpp_dec_float_50(value) / cpp_dec_float_50(sum);
+        if (res < 1e-30) continue;
 
-    //    for (auto& pl : piece_list) ofst << pl << ",";
-    //    ofst << res << "," << res2[piece_list] << std::endl;
-    //}
+        for (auto& pl : piece_list) ofst << pl << ",";
+        ofst << std::setprecision(20) << res << "," << res2[piece_list] << std::endl;
+    }
 }
 
 TEST(count_position_all_test, test1) {

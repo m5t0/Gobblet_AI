@@ -41,6 +41,8 @@ def main(s,f):
 
 
 if __name__ == "__main__":
+    main("3",True)
+    main("3",False)
     main("4",True)
     main("4",False)
     main("5_3_2",True)
