@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
 #include "forward.h"
 
-using cpp_int = boost::multiprecision::cpp_int;
-using cpp_dec_float_50 = boost::multiprecision::cpp_dec_float_50;
-
 TEST(board_id_test, test1) {
     // 0,1,2,3
     // 4,5,6

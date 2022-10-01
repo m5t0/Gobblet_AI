@@ -5,7 +5,7 @@
 // 盤を2次元ではなくて1次元で管理する
 // それぞれのマスについて駒があるかどうかを2進数のフラグで管理する
 // Xが縦方向, Yが横方向, 原点は左上
-constexpr inline int BOARD_SIZE = 5;
+constexpr inline int BOARD_SIZE = 4;
 constexpr inline int BOARD_ID_SIZE = BOARD_SIZE * BOARD_SIZE;
 
 // 駒の種類数
@@ -40,5 +40,8 @@ std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int> 
 std::pair<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>,
     std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>> possible_transition_phase2();
 boost::multiprecision::cpp_int count_position_all();
+
+using cpp_int = boost::multiprecision::cpp_int;
+using cpp_dec_float_50 = boost::multiprecision::cpp_dec_float_50;
 
 #endif // FORWARD_H_

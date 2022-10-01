@@ -1,10 +1,10 @@
 ﻿// count.cpp : アプリケーションのエントリ ポイントを定義します。
 //
 
+#define NDEBUG
 #include "forward.h"
 #include "cpp.h"
 
-using cpp_int = boost::multiprecision::cpp_int;
 
 // ボードをゆっくり出力する
 // tの単位はms
@@ -485,7 +485,7 @@ cpp_int count_position_wrapper2() {
     return count_position2(0, false, f, comb, memo);
 }
 
-// 上に駒がある駒の数と置き方の組み合わせを計算する
+// 盤で一番上(鉛直上向き)に置いてある先手と後手の駒の個数と置き方を固定したとき、その条件を満たす局面の数を返す関数
 [[nodiscard]]
 cpp_int cnt_dfs2_2(int type, Flag& f, std::array<int, PIECE_TYPE_COUNT>& max_cnt,
     std::array<int, 2 * PIECE_TYPE_COUNT>& top_used_cnt, std::array<int, 2 * PIECE_TYPE_COUNT>& used_cnt, const Comb& comb,
@@ -579,7 +579,7 @@ cpp_int cnt_dfs2(int type, Flag& f, std::array<int, 2 * PIECE_TYPE_COUNT>& used_
     return res;
 }
 
-// 1列も揃っていない局面数を調べる関数
+// 1列も揃っていない局面数を盤上にある駒の数の組ごとに調べる関数
 // それぞれのマスに対して一番上(鉛直上向き)にある駒が先手の駒か後手の駒か、若しくは駒が置かれていないかを全探索し、
 // 一番上にある先手の駒の個数と後手の駒の個数を数える
 void count_position3(int id, Flag& f, const Comb& comb,
@@ -693,7 +693,7 @@ void transition_dfs(int type, int d, std::array<int, 2 * PIECE_TYPE_COUNT>& idx,
     }
 }
 
-// 遷移可能な局面数を計算する
+// 到達可能な局面数を計算する
 // やっていることは累積和をとることだけ。
 // ただし、先手or後手の駒の個数が0個であり得ない局面も含む
 [[nodiscard]]
@@ -704,7 +704,7 @@ std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, cpp_int> possible_transition_pha
     return mp;
 }
 
-// 遷移可能な局面数を計算する
+// 到達可能な局面数を計算する
 // ただし、先手or後手の駒の個数が0個で、あり得ない局面は含まない
 [[nodiscard]]
 std::pair<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision::cpp_int>,
@@ -727,7 +727,7 @@ std::pair<std::map<std::array<int, 2 * PIECE_TYPE_COUNT>, boost::multiprecision:
     auto mp2 = mp;
     for (int d = 0; d < 2 * PIECE_TYPE_COUNT; d++) transition_dfs(0, d, idx, mp);
     check(mp);
-    // 個数の和、個数
+    // 局面数の累積和、局面数
     return { mp,mp2 };
 }
 
