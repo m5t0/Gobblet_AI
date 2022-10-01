@@ -1,7 +1,7 @@
 # Gobblet AI
 
 `Gobblet AI` is a code about min max method and analytics on transitions of positions of the board game `Gobblet`.
-Main functions are defined in `cpp/search.cpp` and called in `cpp_test/search_test.cpp`.
+Const variables are defined in `cpp/forward.h`, main functions are defined in `cpp/search.cpp`, and these things are used in `cpp_test/search_test.cpp`.
 Python codes used to investigate statistics are in the `python` folder and the plots and csv files are in the `output` folder.
 Memos I wrote when developping are in `output/statistics.txt`.
 
