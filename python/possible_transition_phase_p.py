@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import math
 
 
-def main(s,f):
+def main(s, f, color=None, title=None):
     parent_parent = Path(__file__).resolve().parent.parent
     df = pd.read_csv(
         parent_parent.joinpath(Path(f"output/possible_transition_phase_p_{s}.csv")),
@@ -35,15 +35,15 @@ def main(s,f):
     print("mean", str(mean).rjust(43))
     print("std", str(std).rjust(44))
     print("min", str(mn).rjust(44))
-    #print("25%", str(f(p1,df[0])).rjust(34))
-    #print("50%", str(f(p2,df[0])).rjust(34))
-    #print("75%", str(f(p3,df[0])).rjust(34))
     print("max", str(mx).rjust(44))
     print("corr", str(crr).rjust(43))
 
 
-    plt.hist(df[0], bins=50, weights=df[1])
-    #plt.title("possible_transition_phase_p_4")
+    plt.hist(df[0], bins=50, weights=df[1], color=color)
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title(s)
     plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
     plt.ylabel("局面数", fontname="MS Gothic")
     if f:
@@ -53,8 +53,11 @@ def main(s,f):
         plt.savefig(parent_parent.joinpath(Path(f"output/possible_transition_phase_p_log_{s}.png")))
     plt.show()
 
-    plt.scatter(df[0], df[1])
-    #plt.title("possible_transition_phase_p_plot_4")
+    plt.scatter(df[0], df[1], color=color)
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title(s)
     plt.xlabel("到達可能な局面数/総局面数", fontname="MS Gothic")
     plt.ylabel("局面数", fontname="MS Gothic")
     if f:
@@ -66,9 +69,9 @@ def main(s,f):
     plt.show()
 
 if __name__ == "__main__":
-    main("3",True)
-    main("3",False)
-    main("4",True)
-    main("4",False)
+    main("3",True, None,"3x3")
+    main("3",False, None,"3x3")
+    main("4",True, "orange","4x4")
+    main("4",False, "orange","4x4")
     main("5_3_2", True)
     main("5_3_2",False)

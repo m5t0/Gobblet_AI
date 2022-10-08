@@ -1,7 +1,6 @@
 ﻿// count.cpp : アプリケーションのエントリ ポイントを定義します。
 //
 
-#define NDEBUG
 #include "forward.h"
 #include "cpp.h"
 
