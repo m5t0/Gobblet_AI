@@ -24,7 +24,7 @@ However, I can't guarantee that you can certainly build in Linux or Mac OS.
 ## Use Visual Studio
 1. Please install Visual Studio. Make sure that features of Visual C++ and CMake are installed.
 2. Please open the `Gobblet_AI` folder in Visual Studio.
-3. You can build the project only to open the folder because I used the CMake Project of Visual Studio.
+3. You can build the project only to open the folder and build like usual Visual Studio Project because I used the CMake Project of Visual Studio.
 4. Please make sure to run `cpp_test.exe`. If you try to run other files, it won't work well.
 
 ## Use WSL
