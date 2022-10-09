@@ -34,7 +34,7 @@ Of course, g++ and clang++ of WSL may be updated and you may be able to build co
 
 1. Please install (g++ or clang++) and cmake.
 2. Please move to the `Gobblet_AI` folder like `cd ./Gobblet_AI`.
-3. Please make a output folder like `mkdir ./out`.
+3. Please make a output folder like `mkdir out`.
 4. Please move to the output folder like `cd ./out`.
 5. Please use the command `cmake ..` .
 6. Please use the command `cmake --build .` . If you want to build the codes as Release build, please use the command `cmake --build . --config Release`.
