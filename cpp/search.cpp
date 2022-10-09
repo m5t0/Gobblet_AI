@@ -50,6 +50,16 @@ std::uint32_t convert_to_square(std::uint32_t square, int turn) {
     return square << PIECE_TYPE_COUNT * turn;
 }
 
+// 最も上にある1であるビットだけ取り出す
+std::uint32_t bits_msb(std::uint32_t v) {
+    v = v | (v >> 1);
+    v = v | (v >> 2);
+    v = v | (v >> 4);
+    v = v | (v >> 8);
+    v = v | (v >> 16);
+    return v ^ (v >> 1);
+}
+
 // 先手が勝ったらtrue, 負けたらfalse
 // 勝ち負けが決まらない場合nullopt
 [[nodiscard]]
@@ -209,7 +219,7 @@ void depth_search(Board& board, long long depth, long long& cnt, long long& cnt2
 
     // 盤上で駒を動かす
     for (int id = 0; id < BOARD_ID_SIZE; id++) {
-        auto p1 = std::bit_floor(take_pieces(board[id], 1));
+        auto p1 = bits_msb(take_pieces(board[id], 1));
         auto p2 = take_pieces(board[id], 0);
         if (p1 == 0 || p1 < p2) continue;
 
