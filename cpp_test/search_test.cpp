@@ -354,8 +354,8 @@ TEST(possible_transition_phase2_test, test4) {
 
     std::ofstream ofst("../../../../output/possible_transition_phase_p" + std::to_string(BOARD_SIZE) + ".csv");
 
-    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("first_player_{}", i + 1) << ",";
-    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << std::format("second_player_{}", i + 1) << ",";
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << "first_player_{}" << i + 1 << ",";
+    for (int i = 0; i < PIECE_TYPE_COUNT; i++) ofst << "second_player_{}" << i + 1 << ",";
     ofst << "proportion,count" << std::endl;
 
     auto sum = res.begin()->second;
